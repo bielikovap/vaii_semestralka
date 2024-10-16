@@ -1,0 +1,71 @@
+body {
+    font-family: "Times New Roman", serif;
+
+    padding-top: 50px;
+
+}
+
+h1 {
+    font-weight: bold;
+    font-size: 30px;
+}
+
+h2 {
+    font-size: 20px;
+    margin-top: 5px;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+a {
+    color: hotpink;
+}
+
+a:visited {
+    color: hotpink;
+}
+
+a:hover {
+    color: mediumpurple;
+}
+
+a:active {
+    color: hotpink;
+}
+
+.book-cover {
+    height: 350px;
+    object-fit: contain;
+    width: 100%;
+    transition: transform 0.3s ease;
+}
+
+.book-cover:hover {
+    transform: scale(1.1);
+}
+
+.navbar {
+    height: 73px;
+}
+
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    line-height: 60px;
+}
+
+.navbar-brand, .navbar-brand:focus, .navbar-brand:hover {
+    color: black !important;
+}
+
+.book {
+    display: flex;
+    justify-content: center; /* Center content horizontally */
+    align-items: center; /* Center content vertically */
+}

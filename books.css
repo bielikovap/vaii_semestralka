@@ -1,0 +1,76 @@
+body {
+    font-family: "Times New Roman", serif;
+    padding-top: 30px;
+}
+
+
+h1 {
+    font-size: 25px;
+    font-weight: bold;
+}
+
+h2 {
+    font-size: 17px;
+    text-transform: uppercase;
+}
+
+a {
+    color: hotpink;
+}
+
+a:visited {
+    color: hotpink;
+}
+
+a:hover {
+    color: mediumpurple;
+}
+
+a:active {
+    color: hotpink;
+}
+
+h2 a {
+    color: black;
+    text-decoration: none;
+}
+
+h2 a:visited,
+h2 a:active {
+    color: black;
+    text-decoration: none;
+}
+
+h2 a:hover {
+    color: black;
+    text-decoration: underline;
+}
+
+p {
+    font-style: italic;
+}
+
+.img-fluid {
+    max-width: 100%; /* Ensures the image never exceeds the container width */
+    height: 300px;
+}
+
+.navbar {
+    height: 73px;
+}
+
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    line-height: 60px;
+}
+
+.navbar-brand, .navbar-brand:focus, .navbar-brand:hover {
+    color: black !important;
+}
+
+.book {
+    display: flex; /* Use flexbox */
+    justify-content: center; /* Center content horizontally */
+    align-items: center; /* Center content vertically */
+}
