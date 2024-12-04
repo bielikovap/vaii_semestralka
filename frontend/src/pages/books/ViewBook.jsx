@@ -3,33 +3,32 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const ViewBook = () => {
-  window.scrollTo(0, 0); 
-  const { id } = useParams(); 
-  const [book, setBook] = useState(null); 
-  const [authors, setAuthors] = useState([]); 
-  const [filteredAuthors, setFilteredAuthors] = useState([]); 
-  const [loading, setLoading] = useState(true); 
-  const [error, setError] = useState(''); 
-  const [isModalOpen, setIsModalOpen] = useState(false); 
+  window.scrollTo(0, 0);
+  const { id } = useParams();
+  const [book, setBook] = useState(null);
+  const [authors, setAuthors] = useState([]);
+  const [filteredAuthors, setFilteredAuthors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [updatedBook, setUpdatedBook] = useState({
     title: '',
-    author: '', 
+    author: '',
     publishYear: '',
     ISBN: '',
     description: '',
     bookCover: '',
-  }); 
-  const [searchQuery, setSearchQuery] = useState(''); 
+  });
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedAuthor, setSelectedAuthor] = useState(null);
-  const navigate = useNavigate(); 
-  const [errorModalOpen, setErrorModalOpen] = useState(false); 
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchAuthors = async () => {
       try {
         const response = await axios.get('http://localhost:5554/authors');
         setAuthors(response.data);
-        setFilteredAuthors(response.data); 
+        setFilteredAuthors(response.data);
       } catch (err) {
         setError('Failed to fetch authors. Please try again later.');
         console.error('Error fetching authors:', err.message);
@@ -43,7 +42,7 @@ const ViewBook = () => {
       try {
         const response = await axios.get(`http://localhost:5554/books/${id}`);
         setBook(response.data);
-        setUpdatedBook(response.data); 
+        setUpdatedBook(response.data);
       } catch (err) {
         setError('Failed to fetch book details. Please try again later.');
         console.error('Error fetching book details:', err.message);
@@ -63,7 +62,7 @@ const ViewBook = () => {
     if (confirmed) {
       try {
         await axios.delete(`http://localhost:5554/books/${id}`);
-        navigate('/'); 
+        navigate('/');
       } catch (err) {
         console.error('Error deleting book:', err.message);
       }
@@ -76,64 +75,57 @@ const ViewBook = () => {
       ...prevState,
       [name]: value,
     }));
-  }; 
-
+  };
 
   const toggleModal = () => {
-    // Reset the form when closing without saving
     if (isModalOpen) {
-      setUpdatedBook(book);  // Reset the form to the original book data
+      setUpdatedBook(book); 
     }
     setIsModalOpen(!isModalOpen);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
-    let validationError = "";
-  
+
+    let validationError = '';
+
     if (!updatedBook.title.trim()) {
-      validationError = "Title is required.";
+      validationError = 'Title is required.';
     } else if (!selectedAuthor && !updatedBook.author) {
-      validationError = "An author must be selected.";
+      validationError = 'An author must be selected.';
     } else if (
       !updatedBook.publishYear ||
       updatedBook.publishYear < 1000 ||
       updatedBook.publishYear > new Date().getFullYear()
     ) {
-      validationError = "Please provide a valid publish year.";
+      validationError = 'Please provide a valid publish year.';
     } else if (!updatedBook.ISBN || updatedBook.ISBN.length < 10 || updatedBook.ISBN.length > 13) {
-      validationError = "ISBN should be between 10 and 13 digits.";
+      validationError = 'ISBN should be between 10 and 13 digits.';
     } else if (!updatedBook.description.trim()) {
-      validationError = "Description is required.";
+      validationError = 'Description is required.';
     } else if (!updatedBook.longDescription.trim()) {
-      validationError = "Long description is required.";
+      validationError = 'Long description is required.';
     }
-  
+
     if (validationError) {
-      setError(validationError); 
-      setErrorModalOpen(true); // Trigger the error modal
+      
+      setError(validationError); // Set error message
       return;
     }
-  
+
     const payload = {
-      ...updatedBook, 
+      ...updatedBook,
       author: selectedAuthor ? selectedAuthor._id : updatedBook.author,
     };
-  
+
     try {
       await axios.put(`http://localhost:5554/books/${id}`, payload);
-      toggleModal(); // Close the edit modal after successful update
-      setBook(updatedBook); // Update state with new book details
+      toggleModal(); 
+      setBook(updatedBook); 
     } catch (err) {
       console.error('Error updating book:', err.message);
       setError('Failed to update the book. Please try again.');
-      setErrorModalOpen(true); // Show the error modal
     }
-  };
-
-  const closeErrorModal = () => {
-    setErrorModalOpen(false); 
   };
 
   const handleSearchChange = (e) => {
@@ -151,8 +143,8 @@ const ViewBook = () => {
   };
 
   const handleSelectAuthor = (author) => {
-    setSearchQuery(author.name); 
-    setSelectedAuthor(author); 
+    setSearchQuery(author.name);
+    setSelectedAuthor(author);
     setFilteredAuthors([]);
   };
 
@@ -169,12 +161,8 @@ const ViewBook = () => {
         <button onClick={() => navigate(-1)}>Back</button>
       </header>
 
-      <div className="book-details" style={{
-        display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '20px', justifyContent: 'center'
-      }}>
-        <div className="book-cover" style={{
-          flex: '1', maxWidth: '300px', paddingLeft: '30px', textAlign: 'center'
-        }}>
+      <div className="book-details" style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '20px', justifyContent: 'center' }}>
+        <div className="book-cover" style={{ flex: '1', maxWidth: '300px', paddingLeft: '30px', textAlign: 'center' }}>
           <img
             src={book.bookCover}
             alt={book.title}
@@ -183,7 +171,7 @@ const ViewBook = () => {
           <div style={{ marginTop: '1rem' }}>
             <button
               onClick={toggleModal}
-              style={{ marginRight: '1rem', padding: '0.5rem 1rem', fontSize: '14px', color: "#4CAF50"}}
+              style={{ marginRight: '1rem', padding: '0.5rem 1rem', fontSize: '14px', color: '#4CAF50' }}
             >
               Edit Book
             </button>
@@ -201,20 +189,18 @@ const ViewBook = () => {
             </button>
           </div>
         </div>
-        <div className="book-info" style={{
-          flex: '2', paddingLeft: '20px', minWidth: '300px',
-        }}>
+        <div className="book-info" style={{ flex: '2', paddingLeft: '20px', minWidth: '300px' }}>
           <h1 style={{ fontSize: '30px', fontWeight: 'bold' }}>{book.title}</h1>
           <p>
-          <strong>Author:</strong>{' '}
-          {book.author ? (
-          <Link to={`/authors/${book.author._id}`} style={{ textDecoration: 'none',}}>
-          {book.author.name}
-          </Link>
-  ) : (
-    'Unknown'
-  )}
-</p>
+            <strong>Author:</strong>{' '}
+            {book.author ? (
+              <Link to={`/authors/${book.author._id}`} style={{ textDecoration: 'none' }}>
+                {book.author.name}
+              </Link>
+            ) : (
+              'Unknown'
+            )}
+          </p>
           <p>
             <strong>Published Year:</strong> {book.publishYear}
           </p>
@@ -231,43 +217,43 @@ const ViewBook = () => {
       {isModalOpen && (
         <div className="modal" style={modalStyle}>
           <div style={modalContentStyle}>
-            <h2 style = {{fontSize: "25px", fontWeight: "bold"}}>Edit Book</h2>
-            {error && <p style={{ color: 'red', fontWeight: 'bold' }}>{error}</p>}  
+            <h2 style={{ fontSize: '25px', fontWeight: 'bold' }}>Edit Book</h2>
+            {error && <p style={{ color: 'red', fontWeight: 'bold' }}>{error}</p>}
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <div style={formGroupStyle}>
-                <label>Title</label>
-                <input
-                  type="text"
-                  name="title"
-                  value={updatedBook.title}
-                  onChange={handleChange}
-                  required
-                  style={inputStyle}
-                />
-              </div>
-              <div style={formGroupStyle}>
-                <label>Author</label>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  placeholder="Search for author..."
-                  style={inputStyle}
-                />
-                {searchQuery && filteredAuthors.length > 0 && (
-                  <ul style={{ ...dropdownStyle, width: '500px', zIndex: 1050 }}>
-                    {filteredAuthors.map((author) => (
-                      <li
-                        key={author.id}
-                        onClick={() => handleSelectAuthor(author)}
-                        style={{ ...dropdownItemStyle, width: '100%' }}
-                      >
-                        {author.name}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+  <div style={formGroupStyle}>
+    <label>Title</label>
+    <input
+      type="text"
+      name="title"
+      value={updatedBook.title}
+      onChange={handleChange}
+      required
+      style={inputStyle}
+    />
+  </div>
+  <div style={formGroupStyle}>
+    <label>Author</label>
+    <input
+      type="text"
+      value={searchQuery}
+      onChange={handleSearchChange}
+      placeholder="Search for author..."
+      style={inputStyle}
+    />
+    {searchQuery && filteredAuthors.length > 0 && (
+      <ul style={{ ...dropdownStyle, width: '500px', zIndex: 1050 }}>
+        {filteredAuthors.map((author) => (
+          <li
+            key={author.id}
+            onClick={() => handleSelectAuthor(author)}
+            style={{ ...dropdownItemStyle, width: '100%' }}
+          >
+            {author.name}
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
               <div style={formGroupStyle}>
                 <label>Publish Year</label>
                 <input
@@ -336,31 +322,11 @@ const ViewBook = () => {
           </div>
         </div>
       )}
-
-
-{errorModalOpen && (
-  <div className="modal" style={modalStyle}>
-    <div style={modalContentStyle}>
-      <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: 'red' }}>Error</h2>
-      <p style={{ color: 'black', fontSize: '16px', margin: '10px 0' }}>{error}</p>
-      <button
-        onClick={closeErrorModal}
-        style={{
-          ...submitButtonStyle,
-          backgroundColor: '#f44336', 
-        }}
-      >
-        Close
-      </button>
-    </div>
-  </div>
-)}
-
     </div>
   );
 };
 
-const header= {
+const header = {
   padding: '10px',
   backgroundColor: '#f0f0f0',
   display: 'flex',
@@ -371,12 +337,8 @@ const header= {
   top: '0',
   left: '0',
   zIndex: 1000,
-  gap: '15px'
+  gap: '15px',
 };
-
-
-
-
 
 const modalStyle = {
   position: 'fixed',
@@ -388,7 +350,7 @@ const modalStyle = {
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
-  zIndex: 9999,
+  zIndex: 999,
 };
 
 const modalContentStyle = {
