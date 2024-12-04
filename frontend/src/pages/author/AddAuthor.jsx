@@ -6,7 +6,7 @@ const AddAuthor = () => {
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
-  const [profilePictureUrl, setProfilePictureUrl] = useState(''); // Changed to URL input
+  const [profilePictureUrl, setProfilePictureUrl] = useState(''); 
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -14,12 +14,11 @@ const AddAuthor = () => {
     e.preventDefault();
     setLoading(true);
 
-    // Create form data for submission
     const formData = new FormData();
     formData.append('name', name);
     formData.append('bio', bio);
     formData.append('dateOfBirth', dateOfBirth);
-    formData.append('profilePictureUrl', profilePictureUrl); // Send the URL instead of the file
+    formData.append('profilePicture', profilePictureUrl); 
 
     try {
       await axios.post('http://localhost:5554/authors', formData, {

@@ -17,6 +17,7 @@ const bookSchema = mongoose.Schema(
       },
       ISBN: {
         type: Number,
+        unique:true,
         required: true,
         minlength: 10,
         maxlength: 13,

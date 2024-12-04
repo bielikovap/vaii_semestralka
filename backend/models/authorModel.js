@@ -17,7 +17,7 @@ const authorSchema = mongoose.Schema(
     },
     profilePicture: {
       type: String,
-      required: false,
+      required: true,
     },
   },
   {
