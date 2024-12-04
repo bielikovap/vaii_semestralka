@@ -20,7 +20,7 @@ const reviewSchema = new mongoose.Schema({
   },
   reviewText: {
     type: String,
-    required: false,// Maximum length for review text (optional)
+    required: false,
   },
   createdAt: {
     type: Date,
@@ -32,7 +32,6 @@ const reviewSchema = new mongoose.Schema({
   }
 });
 
-// Automatically update the `updatedAt` field when the document is modified
 reviewSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   next();

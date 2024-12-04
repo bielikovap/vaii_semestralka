@@ -7,11 +7,11 @@ const router = express.Router();
 
 router.post('/', async (request, response) => {
   try {
-    const { title, author, publishYear, ISBN, description, bookCover } = request.body;
+    const { title, author, publishYear, ISBN, description, longDescription, bookCover } = request.body;
 
-    if (!title || !author || !publishYear || !ISBN || !description || !bookCover) {
+    if (!title || !author || !publishYear || !ISBN || !description || !longDescription || !bookCover) {
       return response.status(400).send({
-        message: 'Send all required fields: title, author, publishYear, ISBN, description, bookCover',
+        message: 'Send all required fields: title, author, publishYear, ISBN, description, longDescription, bookCover',
       });
     }
 
@@ -27,6 +27,7 @@ router.post('/', async (request, response) => {
       publishYear,
       ISBN,
       description,
+      longDescription,
       bookCover,
     };
 
@@ -78,11 +79,11 @@ router.get('/:id', async (request, response) => {
 router.put('/:id', async (request, response) => {
   try {
     const { id } = request.params;
-    const { title, author, publishYear, ISBN, description, bookCover } = request.body;
+    const { title, author, publishYear, ISBN, description, longDescription, bookCover } = request.body;
 
-    if (!title || !author || !publishYear || !ISBN || !description || !bookCover) {
+    if (!title || !author || !publishYear || !ISBN || !description || !longDescription || !bookCover) {
       return response.status(400).send({
-        message: 'Send all required fields: title, author, publishYear, ISBN, description, bookCover',
+        message: 'Send all required fields: title, author, publishYear, ISBN, description, longDescription bookCover',
       });
     }
 
@@ -94,7 +95,7 @@ router.put('/:id', async (request, response) => {
 
     const updatedBook = await Book.findByIdAndUpdate(
       id,
-      { title, author, publishYear, ISBN, description, bookCover },
+      { title, author, publishYear, ISBN, description, longDescription, bookCover },
       { new: true }
     ).populate('author', 'name bio');
 

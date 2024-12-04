@@ -24,7 +24,12 @@ const bookSchema = mongoose.Schema(
       description: {
         type: String,
         required: true,
-        maxlength: 2000,
+        maxlength: 250,
+      },
+      longDescription: {
+        type: String,
+        required: true,
+        maxlength: 2000
       },
       bookCover: {
         type: String,

@@ -47,13 +47,13 @@ router.post('/', async (request, response) => {
       const users = await User.find().populate({
         path: 'reviews',
         populate: {
-          path: 'book', // Populate book details within reviews
-          select: 'title author', // Include specific fields of the Book model
+          path: 'book', 
+          select: 'title author', 
         },
-        select: 'rating reviewText createdAt', // Include specific fields of the Review model
+        select: 'rating reviewText createdAt', 
       });
   
-      // Add review count for each user
+      //pocet recenzii na uzivatela
       const usersWithReviewCounts = users.map((user) => ({
         ...user.toObject(),
         reviewCount: user.reviews.length,
@@ -70,9 +70,6 @@ router.post('/', async (request, response) => {
   });
   
   
-  
-
-
   //jeden pouzivatel podla id
   router.get('/:id', async (request, response) => {
     try {
@@ -91,7 +88,7 @@ router.post('/', async (request, response) => {
     }
   });
 
-  //uprava pouzivatela podla id + salt pred hashovanim hesla
+  //uprava pouzivatela podla id + salt pred hashovanim hesla (docasne, este musim pozriet??)
   router.put('/:id', async (request, response) => {
     try {
       const { id } = request.params;
@@ -103,7 +100,7 @@ router.post('/', async (request, response) => {
         });
       }
   
-      //????
+      //???? pozriet
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
   
