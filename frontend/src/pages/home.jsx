@@ -53,6 +53,10 @@ const Home = () => {
     cursor: 'pointer',
     transition: 'transform 0.3s ease',
     textAlign: 'center',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    height: '100%', // ensures the card takes full height
   };
 
   const buttonContainerStyle = {
@@ -61,6 +65,22 @@ const Home = () => {
     alignItems: 'center', 
     marginTop: '20px',
     justifyContent: 'flex-start', 
+  };
+
+  const tinyButtonStyle = {
+    padding: '5px 10px',
+    backgroundColor: '#734f96',
+    color: 'white',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    fontSize: '12px',
+    marginTop: '5px',
+  };
+
+  const deleteButtonStyle = {
+    ...tinyButtonStyle,
+    backgroundColor: '#E74C3C',
   };
 
   return (
@@ -153,12 +173,46 @@ const Home = () => {
             <div
               key={author._id}
               style={authorCardStyle}
-              onClick={() => navigate(`/authors/${author._id}`)}
+              // Handle navigation when clicking the author card itself
+              onClick={() => navigate(`/authors/${author._id}`)} 
             >
               <h3>{author.name}</h3>
               <p style={{ fontSize: '14px', color: '#555' }}>
                 {author.bio ? author.bio.substring(0, 100) + '...' : 'No bio available'}
               </p>
+
+              {/* Edit and Delete Buttons */}
+              <div style={{ marginTop: 'auto' }}>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent the click event from bubbling up
+                    navigate(`/edit-author/${author._id}`);
+                  }}
+                  style={tinyButtonStyle}
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent the click event from bubbling up
+                    const confirmDelete = window.confirm('Are you sure you want to delete this author?');
+                    if (confirmDelete) {
+                      axios
+                        .delete(`http://localhost:5554/authors/${author._id}`)
+                        .then(() => {
+                          setAuthors(authors.filter((a) => a._id !== author._id));
+                        })
+                        .catch((err) => {
+                          alert('Error deleting author');
+                          console.error(err);
+                        });
+                    }
+                  }}
+                  style={deleteButtonStyle}
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           ))}
         </div>

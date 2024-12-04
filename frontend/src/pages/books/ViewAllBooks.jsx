@@ -96,7 +96,7 @@ const ViewBooks = () => {
       </header>
 
       <h1 style={{ textAlign: 'center' }}>All Books</h1>
-      <button onClick={toggleView} style={{ marginBottom: '20px', display: 'block', marginLeft: 'auto', marginRight: 'auto' }}>
+      <button onClick={toggleView} style={{ marginTop: "20px", marginBottom: '20px', display: 'block', marginLeft: 'auto', marginRight: 'auto' }}>
         Switch to {viewMode === 'grid' ? 'List' : 'Grid'} View
       </button>
 

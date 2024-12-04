@@ -5,6 +5,9 @@ import AddBook from "./pages/books/AddBook.jsx"
 import ViewBook from "./pages/books/ViewBook.jsx"
 import ViewAuthor from './pages/author/ViewAuthor.jsx';
 import ViewAllBooks from './pages/books/ViewAllBooks.jsx';
+import ViewAllAuthors from './pages/author/ViewAllAuthors.jsx'
+import EditAuthor from './pages/author/EditAuthor.jsx';
+import AddAuthor from './pages/author/AddAuthor.jsx';
 
 document.body.style.overflowX = 'hidden'; 
 
@@ -17,6 +20,9 @@ const App = () => {
       <Route path='/books' element={<ViewAllBooks />} />
 
       <Route path="/authors/:authorId" element={<ViewAuthor />} />
+      <Route path="/authors" element={<ViewAllAuthors />} />
+      <Route path="/edit-author/:id" element={<EditAuthor />}/>
+      <Route path="/add-author" element={<AddAuthor />}/>
     </Routes>
   );
 };

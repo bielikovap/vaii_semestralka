@@ -155,15 +155,10 @@ const AddBook = () => {
   );
 };
 
-
 const styles = {
   container: {
     padding: '20px',
-    maxWidth: '900px',
     margin: '0 auto',
-    backgroundColor: '#f9f9f9',
-    borderRadius: '10px',
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
     position: 'relative',
   },
   header: {
@@ -189,11 +184,9 @@ const styles = {
     marginRight: '10px', 
   },
   formContainer: {
-    marginTop: '80px', 
+    marginTop: '20px', 
     padding: '20px',
     backgroundColor: '#fff',
-    borderRadius: '10px',
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
   },
   headerText: {
     textAlign: 'center',

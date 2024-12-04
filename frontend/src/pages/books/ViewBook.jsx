@@ -22,6 +22,7 @@ const ViewBook = () => {
   const [searchQuery, setSearchQuery] = useState(''); 
   const [selectedAuthor, setSelectedAuthor] = useState(null);
   const navigate = useNavigate(); 
+  const [errorModalOpen, setErrorModalOpen] = useState(false); 
 
   useEffect(() => {
     const fetchAuthors = async () => {
@@ -69,29 +70,70 @@ const ViewBook = () => {
     }
   };
 
-  const toggleModal = () => {
-    setIsModalOpen(!isModalOpen);
-  };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setUpdatedBook((prevState) => ({
       ...prevState,
       [name]: value,
     }));
+  }; 
+
+
+  const toggleModal = () => {
+    // Reset the form when closing without saving
+    if (isModalOpen) {
+      setUpdatedBook(book);  // Reset the form to the original book data
+    }
+    setIsModalOpen(!isModalOpen);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
+    let validationError = "";
+  
+    if (!updatedBook.title.trim()) {
+      validationError = "Title is required.";
+    } else if (!selectedAuthor && !updatedBook.author) {
+      validationError = "An author must be selected.";
+    } else if (
+      !updatedBook.publishYear ||
+      updatedBook.publishYear < 1000 ||
+      updatedBook.publishYear > new Date().getFullYear()
+    ) {
+      validationError = "Please provide a valid publish year.";
+    } else if (!updatedBook.ISBN || updatedBook.ISBN.length < 10 || updatedBook.ISBN.length > 13) {
+      validationError = "ISBN should be between 10 and 13 digits.";
+    } else if (!updatedBook.description.trim()) {
+      validationError = "Description is required.";
+    } else if (!updatedBook.longDescription.trim()) {
+      validationError = "Long description is required.";
+    }
+  
+    if (validationError) {
+      setError(validationError); 
+      setErrorModalOpen(true); // Trigger the error modal
+      return;
+    }
+  
+    const payload = {
+      ...updatedBook, 
+      author: selectedAuthor ? selectedAuthor._id : updatedBook.author,
+    };
+  
     try {
-      await axios.put(`http://localhost:5554/books/${id}`, updatedBook);
-      toggleModal(); 
-      setBook(updatedBook); 
+      await axios.put(`http://localhost:5554/books/${id}`, payload);
+      toggleModal(); // Close the edit modal after successful update
+      setBook(updatedBook); // Update state with new book details
     } catch (err) {
       console.error('Error updating book:', err.message);
       setError('Failed to update the book. Please try again.');
+      setErrorModalOpen(true); // Show the error modal
     }
+  };
+
+  const closeErrorModal = () => {
+    setErrorModalOpen(false); 
   };
 
   const handleSearchChange = (e) => {
@@ -141,7 +183,7 @@ const ViewBook = () => {
           <div style={{ marginTop: '1rem' }}>
             <button
               onClick={toggleModal}
-              style={{ marginRight: '1rem', padding: '0.5rem 1rem', fontSize: '14px' }}
+              style={{ marginRight: '1rem', padding: '0.5rem 1rem', fontSize: '14px', color: "#4CAF50"}}
             >
               Edit Book
             </button>
@@ -164,8 +206,15 @@ const ViewBook = () => {
         }}>
           <h1 style={{ fontSize: '30px', fontWeight: 'bold' }}>{book.title}</h1>
           <p>
-            <strong>Author:</strong> {book.author ? book.author.name : 'Unknown'}
-          </p>
+          <strong>Author:</strong>{' '}
+          {book.author ? (
+          <Link to={`/authors/${book.author._id}`} style={{ textDecoration: 'none',}}>
+          {book.author.name}
+          </Link>
+  ) : (
+    'Unknown'
+  )}
+</p>
           <p>
             <strong>Published Year:</strong> {book.publishYear}
           </p>
@@ -182,8 +231,8 @@ const ViewBook = () => {
       {isModalOpen && (
         <div className="modal" style={modalStyle}>
           <div style={modalContentStyle}>
-            <h2>Edit Book</h2>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
+            <h2 style = {{fontSize: "25px", fontWeight: "bold"}}>Edit Book</h2>
+            {error && <p style={{ color: 'red', fontWeight: 'bold' }}>{error}</p>}  
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div style={formGroupStyle}>
                 <label>Title</label>
@@ -287,6 +336,26 @@ const ViewBook = () => {
           </div>
         </div>
       )}
+
+
+{errorModalOpen && (
+  <div className="modal" style={modalStyle}>
+    <div style={modalContentStyle}>
+      <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: 'red' }}>Error</h2>
+      <p style={{ color: 'black', fontSize: '16px', margin: '10px 0' }}>{error}</p>
+      <button
+        onClick={closeErrorModal}
+        style={{
+          ...submitButtonStyle,
+          backgroundColor: '#f44336', 
+        }}
+      >
+        Close
+      </button>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };
@@ -305,6 +374,10 @@ const header= {
   gap: '15px'
 };
 
+
+
+
+
 const modalStyle = {
   position: 'fixed',
   top: '0',
@@ -315,7 +388,7 @@ const modalStyle = {
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
-  zIndex: 999,
+  zIndex: 9999,
 };
 
 const modalContentStyle = {
@@ -324,6 +397,8 @@ const modalContentStyle = {
   borderRadius: '10px',
   maxWidth: '600px',
   width: '100%',
+  maxHeight: '80vh',
+  overflowY: 'auto',
 };
 
 const formGroupStyle = {
@@ -366,20 +441,21 @@ const dropdownItemStyle = {
 const submitButtonStyle = {
   padding: '10px 20px',
   fontSize: '16px',
+  width: '100%',
   backgroundColor: '#4CAF50',
   color: 'white',
   border: 'none',
   borderRadius: '5px',
+  cursor: 'pointer',
 };
 
 const closeButtonStyle = {
   padding: '10px 20px',
   backgroundColor: '#f44336',
+  width: '100%',
   color: 'white',
   border: 'none',
   borderRadius: '5px',
-  marginTop: '10px',
-  cursor: 'pointer',
 };
 
 export default ViewBook;
