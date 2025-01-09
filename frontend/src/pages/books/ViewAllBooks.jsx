@@ -4,18 +4,25 @@ import { Link, useNavigate } from 'react-router-dom';
 
 const ViewBooks = () => {
   const [books, setBooks] = useState([]);  
+  const [authors, setAuthors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [viewMode, setViewMode] = useState('grid');  
+  const [bookFilter, setBookFilter] = useState(''); 
+  const [selectedAuthors, setSelectedAuthors] = useState([]);
+  const [showAuthorsFilter, setShowAuthorsFilter] = useState(false);
   const navigate = useNavigate();  
 
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        const response = await axios.get('http://localhost:5554/books');
-        setBooks(response.data.data || []);  
+        const bookResponse = await axios.get('http://localhost:5554/books');
+        setBooks(bookResponse.data.data || []);  
+
+        const authorResponse = await axios.get('http://localhost:5554/authors');
+        setAuthors(authorResponse.data || []); 
       } catch (err) {
-        setError('Error fetching books');
+        setError('Error fetching data');
       } finally {
         setLoading(false);
       }
@@ -34,6 +41,26 @@ const ViewBooks = () => {
   const toggleView = () => {
     setViewMode(viewMode === 'grid' ? 'list' : 'grid');
   };
+
+  const handleAuthorChange = (authorId) => {
+    setSelectedAuthors((prevSelectedAuthors) => {
+      if (prevSelectedAuthors.includes(authorId)) {
+        return prevSelectedAuthors.filter((id) => id !== authorId);  
+      } else {
+        return [...prevSelectedAuthors, authorId]; 
+      }
+    });
+  };
+
+  const filteredBooks = books.filter((book) => {
+    const matchesBookFilter = bookFilter.trim() === '' 
+      || book.title.trim().toLowerCase().includes(bookFilter.trim().toLowerCase());
+
+    const matchesAuthorFilter = selectedAuthors.length === 0 
+      || selectedAuthors.includes(book.author?._id); 
+
+    return matchesBookFilter && matchesAuthorFilter;
+  });
 
   const gridStyles = {
     display: 'grid',
@@ -100,11 +127,51 @@ const ViewBooks = () => {
         Switch to {viewMode === 'grid' ? 'List' : 'Grid'} View
       </button>
 
+      <div style={{ padding: '20px', marginTop: '0px' }}> 
+        <input 
+          type="text" 
+          placeholder="Filter by book name..." 
+          value={bookFilter} 
+          onChange={(e) => {
+            console.log('BookFilter updated:', e.target.value); // Debug log
+            setBookFilter(e.target.value);
+          }} 
+          style={{ 
+            width: '100%', 
+            padding: '10px', 
+            fontSize: '16px', 
+            borderRadius: '8px', 
+            border: '1px solid #ccc', 
+            marginBottom: '0px', 
+            }} 
+          /> 
+      </div>
+
+      <button onClick={() => setShowAuthorsFilter(!showAuthorsFilter)} style={{ display: 'block', marginLeft: 'auto', marginRight: 'auto', marginBottom: '20px' }}>
+        Filter by Authors
+      </button>
+
+      {showAuthorsFilter && (
+      <div style={{ marginBottom: '20px' }}>
+        {authors.map((author) => (
+          <label key={author._id} style={{ marginRight: '10px' }}>
+            <input 
+              type="checkbox" 
+              checked={selectedAuthors.includes(author._id)} 
+              onChange={() => handleAuthorChange(author._id)} 
+            />
+            {author.name}
+          </label>
+        ))}
+      </div>
+      )}
+
+
       <div style={viewMode === 'grid' ? gridStyles : listStyles}>
-        {books.length === 0 ? (
+        {filteredBooks.length === 0 ? (
           <p>No books available</p>
         ) : (
-          books.map((book) => (
+          filteredBooks.map((book) => (
             <div
               key={book._id}
               style={viewMode === 'grid' ? itemStyles : listItemStyles}
