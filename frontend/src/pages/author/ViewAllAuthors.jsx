@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link,  useNavigate, } from 'react-router-dom';  
 
+import Header from '../../components/Header';
+
 
 const ViewAllAuthors = () => {
   const [authors, setAuthors] = useState([]);
@@ -78,26 +80,10 @@ const ViewAllAuthors = () => {
     marginTop: '10px',
   };
 
-  const header = {
-    padding: '10px',
-    backgroundColor: '#f0f0f0',
-    display: 'flex',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    width: '100%',
-    position: 'fixed',
-    top: '0',
-    left: '0',
-    zIndex: 1000,
-    gap: '15px',
-  };
 
   return (
     <div>
-        <header style={header}>
-        <button onClick={() => navigate('/')}>Home</button>
-        <button onClick={() => navigate(-1)}>Back</button>
-      </header>
+        <Header />
 
       <div style={{ padding: '20px', marginTop: '50px' }}>
       <input

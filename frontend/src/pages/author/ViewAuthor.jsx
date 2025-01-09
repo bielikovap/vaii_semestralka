@@ -3,11 +3,15 @@ import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 
+import Header from '../../components/Header';
+
 const ViewAuthor = () => {
   const { authorId } = useParams();
   const [author, setAuthor] = useState(null);
   const [books, setBooks] = useState([]);
-  const navigate = useNavigate();
+  const [userId, setUserId] = useState(''); 
+  const navigate = useNavigate(); 
+  const [token, setToken] = useState(localStorage.getItem('token'));
 
   useEffect(() => {
     const fetchAuthorDetails = async () => {
@@ -23,6 +27,20 @@ const ViewAuthor = () => {
 
     fetchAuthorDetails();
   }, [authorId]);
+
+
+  useEffect(() => { 
+    const checkAdmin = () => { 
+      if (!token) { 
+        return; 
+      } 
+      const decodedToken = JSON.parse(atob(token.split('.')[1])); 
+      if (decodedToken.role === 'admin') { 
+        setUserId(decodedToken.userId); 
+      } 
+    }; 
+    checkAdmin(); 
+  }, [token]);
 
   const handleEdit = () => {
     navigate(`/edit-author/${authorId}`);
@@ -47,18 +65,15 @@ const ViewAuthor = () => {
 
   return (
     <div style={styles.detailsContainer}>
-      <header style={header}>
-        <button onClick={() => navigate('/')}>Home</button>
-        <button onClick={() => navigate(-1)}>Back</button>
-      </header>
-      <div style={styles.imageContainer}>
+      <Header />
+            <div style={styles.imageContainer}>
         {author.profilePicture && (
           <img
             src={author.profilePicture}
             alt={author.name}
             style={styles.profilePicture}
           />
-        )}
+        )} {userId && (
         <div style={styles.buttonContainer}>
           <button onClick={handleEdit} style={styles.editButton}>
             Edit Author
@@ -67,6 +82,7 @@ const ViewAuthor = () => {
             Delete Author
           </button>
         </div>
+        )}
       </div>
       <div style={styles.infoContainer}>
         <h2 style={{ ...styles.header, fontWeight: 'bold' }}>{author.name}</h2>
@@ -162,20 +178,6 @@ const styles = {
   bookLink: {
     textDecoration: 'none',
   },
-};
-
-const header = {
-  padding: '10px',
-  backgroundColor: '#f0f0f0',
-  display: 'flex',
-  justifyContent: 'flex-start',
-  alignItems: 'center',
-  width: '100%',
-  position: 'fixed',
-  top: '0',
-  left: '0',
-  zIndex: 1000,
-  gap: '15px',
 };
 
 export default ViewAuthor;

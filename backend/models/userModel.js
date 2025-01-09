@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 const userSchema = mongoose.Schema(
   {
@@ -46,11 +47,22 @@ userSchema.virtual('reviews', {
   justOne: false  
 });
 
-userSchema.set('toJSON', {
-  virtuals: true,
+//https://www.mongodb.com/blog/post/password-authentication-with-mongoose-part-1
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) return next(); 
+
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+  next();
 });
-userSchema.set('toObject', {
-  virtuals: true,
-});
+
+userSchema.methods.comparePassword = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
+};
+
+userSchema.set('toJSON', { virtuals: true });
+userSchema.set('toObject', { virtuals: true });
+//------------------------------------------------------------
+
 
 export const User = mongoose.model('User', userSchema);

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import Header from '../../components/Header';
 
 const AddAuthor = () => {
   const [name, setName] = useState('');
@@ -9,6 +10,32 @@ const AddAuthor = () => {
   const [profilePictureUrl, setProfilePictureUrl] = useState(''); 
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [token, setToken] = useState(localStorage.getItem('token')); 
+   const [userId, setUserId] = useState('');
+
+
+   useEffect(() => { 
+      const checkAdmin = () => { 
+        if (!token) { 
+          //console.error('not logged in'); 
+          alert('You do not have access to this page'); 
+          navigate('/login');
+          return;
+        }
+          
+        let decodedToken; try { decodedToken = JSON.parse(atob(token.split('.')[1])); } catch (error) { console.error('Invalid token', error); alert('You do not have access to this page'); navigate('/'); return; }
+          console.log('Decoded Token:', decodedToken);
+          if (decodedToken.role !== 'admin') { 
+            console.error('not an admin'); 
+            alert('You do not have access to this page'); 
+            navigate('/');
+            } else { 
+               setUserId(decodedToken.userId);
+            } }; 
+            checkAdmin(); 
+          }, 
+          
+      [token, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,12 +63,18 @@ const AddAuthor = () => {
     }
   };
 
+  const handleNavigation = (path) => {
+    const confirmation = window.confirm('You must be an admin to access this page. Do you want to continue?');
+    if (confirmation) {
+      navigate(path);
+    }
+  };
+
+  
+
   return (
     <div style={styles.container}>
-      <header style={header}>
-        <button onClick={() => navigate('/')}>Home</button>
-        <button onClick={() => navigate(-1)}>Back</button>
-      </header>
+      <Header/>
       <form onSubmit={handleSubmit} style={styles.form}>
         <h2 style={{ ...styles.header, marginTop: "50px" }}>Add New Author</h2>
         <div style={styles.inputContainer}>

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';  
 
+import Header from '../../components/Header';
+
 const ViewBooks = () => {
   const [books, setBooks] = useState([]);  
   const [authors, setAuthors] = useState([]);
@@ -101,29 +103,12 @@ const ViewBooks = () => {
     flex: 1,
   };
 
- const header = {
-    padding: '10px',
-    backgroundColor: '#f0f0f0',
-    display: 'flex',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    width: '100%',
-    position: 'fixed',
-    top: '0',
-    left: '0',
-    zIndex: 1000,
-    gap: '15px'
-  };
-
   return (
     <div>
-      <header style={header}>
-        <button onClick={() => navigate('/')}>Home</button>
-        <button onClick={() => navigate(-1)}>Back</button>
-      </header>
+      <Header/>
 
       <h1 style={{ textAlign: 'center' }}>All Books</h1>
-      <button onClick={toggleView} style={{ marginTop: "20px", marginBottom: '20px', display: 'block', marginLeft: 'auto', marginRight: 'auto' }}>
+      <button onClick={toggleView} style={{ marginTop: "50px", marginBottom: '20px', display: 'block', marginLeft: 'auto', marginRight: 'auto' }}>
         Switch to {viewMode === 'grid' ? 'List' : 'Grid'} View
       </button>
 

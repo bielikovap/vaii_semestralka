@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Header from '../../components/Header';
 
 const ViewBook = () => {
   window.scrollTo(0, 0);
@@ -22,6 +23,7 @@ const ViewBook = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedAuthor, setSelectedAuthor] = useState(null);
   const navigate = useNavigate();
+  const [userId, setUserId] = useState('');
 
   useEffect(() => {
     const fetchAuthors = async () => {
@@ -53,6 +55,21 @@ const ViewBook = () => {
 
     fetchBook();
   }, [id]);
+
+
+  useEffect(() => { 
+    const checkUser = () => { 
+      const token = localStorage.getItem('token'); 
+      if (!token) { 
+        return; 
+      } 
+      const decodedToken = JSON.parse(atob(token.split('.')[1])); 
+      if (decodedToken.role === 'admin') { 
+        setUserId(decodedToken.userId); 
+      } 
+    }; 
+    checkUser(); 
+  }, []);
 
   if (error) return <p>{error}</p>;
   if (!book) return <p>No book found.</p>;
@@ -109,7 +126,7 @@ const ViewBook = () => {
 
     if (validationError) {
       
-      setError(validationError); // Set error message
+      setError(validationError); 
       return;
     }
 
@@ -156,10 +173,7 @@ const ViewBook = () => {
 
   return (
     <div className="container" style={{ marginTop: '80px' }}>
-      <header style={header}>
-        <button onClick={() => navigate('/')}>Home</button>
-        <button onClick={() => navigate(-1)}>Back</button>
-      </header>
+      <Header/>
 
       <div className="book-details" style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '20px', justifyContent: 'center' }}>
         <div className="book-cover" style={{ flex: '1', maxWidth: '300px', paddingLeft: '30px', textAlign: 'center' }}>
@@ -168,6 +182,7 @@ const ViewBook = () => {
             alt={book.title}
             style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
           />
+          { userId && (
           <div style={{ marginTop: '1rem' }}>
             <button
               onClick={toggleModal}
@@ -188,6 +203,7 @@ const ViewBook = () => {
               Delete Book
             </button>
           </div>
+          )}
         </div>
         <div className="book-info" style={{ flex: '2', paddingLeft: '20px', minWidth: '300px' }}>
           <h1 style={{ fontSize: '30px', fontWeight: 'bold' }}>{book.title}</h1>
@@ -324,20 +340,6 @@ const ViewBook = () => {
       )}
     </div>
   );
-};
-
-const header = {
-  padding: '10px',
-  backgroundColor: '#f0f0f0',
-  display: 'flex',
-  justifyContent: 'flex-start',
-  alignItems: 'center',
-  width: '100%',
-  position: 'fixed',
-  top: '0',
-  left: '0',
-  zIndex: 1000,
-  gap: '15px',
 };
 
 const modalStyle = {

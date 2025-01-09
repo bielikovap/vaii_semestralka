@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import HeaderHome from '../components/HeaderHome';
 
 const Home = () => {
   const [books, setBooks] = useState([]);
@@ -8,8 +9,26 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const [userId, setUserId] = useState('');
 
-  // Fetch books and authors data
+  useEffect(() => { 
+    const checkAdmin = () => { 
+      const token = localStorage.getItem('token'); 
+      
+      if (!token) { 
+        return; 
+      } 
+      
+      const decodedToken = JSON.parse(atob(token.split('.')[1])); 
+      
+      if (decodedToken.role === 'admin') { 
+        setUserId(decodedToken.userId); 
+      } 
+    }; 
+    
+    checkAdmin(); 
+  }, []);
+
   useEffect(() => {
     const fetchBooksAndAuthors = async () => {
       try {
@@ -56,7 +75,7 @@ const Home = () => {
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between',
-    height: '100%', // ensures the card takes full height
+    height: '100%', 
   };
 
   const buttonContainerStyle = {
@@ -84,6 +103,7 @@ const Home = () => {
   };
 
   return (
+    
     <div
       style={{
         padding: '10px',
@@ -94,11 +114,11 @@ const Home = () => {
         paddingTop: '20px',
       }}
     >
-      <h1 style={{ margin: '0', fontSize: '30px', fontWeight: 'bold' }}>BookCorner</h1>
+      <HeaderHome/>
+      <h1 style={{ margin: '0', fontSize: '30px', fontWeight: 'bold', marginTop: '50px' }}>BookCorner</h1>
 
       <h2 style={{ fontSize: '24px', fontWeight: 'bold' }}>Recently added books:</h2>
 
-      {/* Books Section */}
       {books.length === 0 ? (
         <p>No books available</p>
       ) : (
@@ -125,7 +145,7 @@ const Home = () => {
         </div>
       )}
 
-      {/* Book-related Buttons */}
+      {userId && (
       <div style={buttonContainerStyle}>
         <button
           onClick={() => navigate('/add-book')}
@@ -155,9 +175,9 @@ const Home = () => {
         </button>
       </div>
 
+        )}
       <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginTop: "10px"}}>Recently added authors:</h2>
 
-      {/* Authors Section */}
       {authors.length === 0 ? (
         <p>No authors available</p>
       ) : (
@@ -173,7 +193,6 @@ const Home = () => {
             <div
               key={author._id}
               style={authorCardStyle}
-              // Handle navigation when clicking the author card itself
               onClick={() => navigate(`/authors/${author._id}`)} 
             >
               <h3>{author.name}</h3>
@@ -181,11 +200,11 @@ const Home = () => {
                 {author.bio ? author.bio.substring(0, 100) + '...' : 'No bio available'}
               </p>
 
-              {/* Edit and Delete Buttons */}
+              {userId  && (
               <div style={{ marginTop: 'auto' }}>
                 <button
                   onClick={(e) => {
-                    e.stopPropagation(); // Prevent the click event from bubbling up
+                    e.stopPropagation(); 
                     navigate(`/edit-author/${author._id}`);
                   }}
                   style={tinyButtonStyle}
@@ -194,7 +213,7 @@ const Home = () => {
                 </button>
                 <button
                   onClick={(e) => {
-                    e.stopPropagation(); // Prevent the click event from bubbling up
+                    e.stopPropagation(); 
                     const confirmDelete = window.confirm('Are you sure you want to delete this author?');
                     if (confirmDelete) {
                       axios
@@ -213,6 +232,7 @@ const Home = () => {
                   Delete
                 </button>
               </div>
+              )}
             </div>
           ))}
         </div>

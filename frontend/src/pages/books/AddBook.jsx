@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 
+import Header from '../../components/Header';
+
 const AddBook = () => {
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
@@ -12,7 +14,37 @@ const AddBook = () => {
   const [longDescription, setLongDescription] = useState('');
   const [bookCover, setBookCover] = useState('');
 
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
+  const [token, setToken] = useState(localStorage.getItem('token')); 
+  const [userId, setUserId] = useState('');
+
+  useEffect(() => { 
+    const checkAdmin = () => { 
+      if (!token) { 
+        alert("You must be logged in.")
+        console.error('not logged in'); 
+        navigate('/'); 
+        return; 
+      } 
+
+      let decodedToken; 
+      try { 
+        decodedToken = JSON.parse(atob(token.split('.')[1]));
+      } catch (error) { 
+        console.error('Invalid token', error); 
+        navigate('/'); 
+        return; 
+      } 
+      if (decodedToken.role !== 'admin') { 
+        alert("You do not have access to this page.")
+        console.error('not an admin'); 
+        navigate('/'); 
+        return; 
+      } 
+      setUserId(decodedToken.userId); 
+    };
+    checkAdmin(); 
+  }, [token, navigate]);
 
   useEffect(() => {
     const fetchAuthors = async () => {
@@ -49,18 +81,7 @@ const AddBook = () => {
 
   return (
     <div style={styles.container}>
-      <header style={styles.header}>
-        <button 
-          onClick={() => navigate('/')} 
-        >
-          Home
-        </button>
-        <button 
-          onClick={() => navigate(-1)} 
-        >
-          Back
-        </button>
-      </header>
+      <Header />
 
       <div style={styles.formContainer}>
         <h2 style={styles.headerText}>Add New Book</h2>
@@ -160,19 +181,6 @@ const styles = {
     padding: '20px',
     margin: '0 auto',
     position: 'relative',
-  },
-  header: {
-    padding: '10px',
-    backgroundColor: '#f0f0f0',
-    display: 'flex',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    width: '100%',
-    position: 'fixed',
-    top: '0',
-    left: '0',
-    zIndex: 1000,
-    gap: '15px'
   },
   button: {
     padding: '8px 16px',
