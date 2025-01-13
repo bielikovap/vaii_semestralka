@@ -9,8 +9,8 @@ const ViewAuthor = () => {
   const { authorId } = useParams();
   const [author, setAuthor] = useState(null);
   const [books, setBooks] = useState([]);
-  const [userId, setUserId] = useState(''); 
-  const navigate = useNavigate(); 
+  const [userId, setUserId] = useState('');
+  const navigate = useNavigate();
   const [token, setToken] = useState(localStorage.getItem('token'));
 
   useEffect(() => {
@@ -28,18 +28,17 @@ const ViewAuthor = () => {
     fetchAuthorDetails();
   }, [authorId]);
 
-
-  useEffect(() => { 
-    const checkAdmin = () => { 
-      if (!token) { 
-        return; 
-      } 
-      const decodedToken = JSON.parse(atob(token.split('.')[1])); 
-      if (decodedToken.role === 'admin') { 
-        setUserId(decodedToken.userId); 
-      } 
-    }; 
-    checkAdmin(); 
+  useEffect(() => {
+    const checkAdmin = () => {
+      if (!token) {
+        return;
+      }
+      const decodedToken = JSON.parse(atob(token.split('.')[1]));
+      if (decodedToken.role === 'admin') {
+        setUserId(decodedToken.userId);
+      }
+    };
+    checkAdmin();
   }, [token]);
 
   const handleEdit = () => {
@@ -51,7 +50,7 @@ const ViewAuthor = () => {
     if (confirmDelete) {
       try {
         await axios.delete(`http://localhost:5554/authors/${authorId}`);
-        navigate('/authors'); 
+        navigate('/authors');
       } catch (error) {
         console.error('Error deleting author', error);
         alert('Failed to delete author. Please try again.');
@@ -66,28 +65,29 @@ const ViewAuthor = () => {
   return (
     <div style={styles.detailsContainer}>
       <Header />
-            <div style={styles.imageContainer}>
+      <div style={styles.imageContainer}>
         {author.profilePicture && (
           <img
             src={author.profilePicture}
             alt={author.name}
             style={styles.profilePicture}
           />
-        )} {userId && (
-        <div style={styles.buttonContainer}>
-          <button onClick={handleEdit} style={styles.editButton}>
-            Edit Author
-          </button>
-          <button onClick={handleDelete} style={styles.deleteButton}>
-            Delete Author
-          </button>
-        </div>
+        )}
+        {userId && (
+          <div style={styles.buttonContainer}>
+            <button onClick={handleEdit} style={styles.editButton}>
+              Edit Author
+            </button>
+            <button onClick={handleDelete} style={styles.deleteButton}>
+              Delete Author
+            </button>
+          </div>
         )}
       </div>
       <div style={styles.infoContainer}>
-        <h2 style={{ ...styles.header, fontWeight: 'bold', fontFamily: 'against', }}>{author.name}</h2>
+        <h2 style={styles.header}>{author.name}</h2>
         <div style={styles.bio}>
-          <h3 style={{ fontWeight: 'bold', fontFamily: 'against', }}>Biography</h3>
+          <h3 style={styles.subHeader}>Biography</h3>
           <p>{author.bio || 'No biography available.'}</p>
         </div>
         {author.dateOfBirth && (
@@ -96,7 +96,7 @@ const ViewAuthor = () => {
           </div>
         )}
         <div style={styles.books}>
-          <h3 style={{ fontWeight: 'bold' }}>Books by {author.name}</h3>
+          <h3 style={styles.subHeader}>Books by {author.name}</h3>
           {books.length > 0 ? (
             <ul>
               {books.map((book) => (
@@ -122,15 +122,17 @@ const styles = {
     display: 'flex',
     flexDirection: 'row',
     gap: '20px',
+    padding: '20px',
+    flexWrap: 'wrap', 
   },
   imageContainer: {
     flex: 1,
-    maxWidth: '33.33%',  
+    maxWidth: '33.33%',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: '70px',
-    flexDirection: 'column', 
+    flexDirection: 'column',
   },
   profilePicture: {
     maxWidth: '100%',
@@ -139,13 +141,13 @@ const styles = {
     borderRadius: '8px',
   },
   buttonContainer: {
-    marginTop: '15px', 
+    marginTop: '15px',
     display: 'flex',
     flexDirection: 'row',
-    gap: '8px', 
+    gap: '8px',
   },
   editButton: {
-    padding: '8px 16px',  
+    padding: '8px 16px',
     fontSize: '14px',
     color: '#4CAF50',
     border: 'none',
@@ -154,8 +156,8 @@ const styles = {
     transition: 'background-color 0.3s ease',
   },
   deleteButton: {
-    padding: '8px 16px',  
-    fontSize: '14px', 
+    padding: '8px 16px',
+    fontSize: '14px',
     color: '#f44336',
     border: 'none',
     borderRadius: '5px',
@@ -163,9 +165,8 @@ const styles = {
     transition: 'background-color 0.3s ease',
   },
   infoContainer: {
-
     flex: 2,
-    maxWidth: '66.66%',  
+    maxWidth: '66.66%',
     display: 'flex',
     flexDirection: 'column',
     marginTop: '70px',
@@ -177,8 +178,48 @@ const styles = {
     color: '#333',
     marginBottom: '20px',
   },
+  subHeader: {
+    fontWeight: 'bold',
+    fontFamily: 'against',
+  },
+  bio: {
+    marginBottom: '20px',
+  },
+  dateOfBirth: {
+    marginBottom: '20px',
+  },
+  books: {
+    marginTop: '20px',
+  },
   bookLink: {
     textDecoration: 'none',
+    color: '#4CAF50',
+  },
+  '@media (max-width: 768px)': {
+    detailsContainer: {
+      flexDirection: 'column',
+    },
+    imageContainer: {
+      maxWidth: '100%',
+      marginTop: '0',
+    },
+    infoContainer: {
+      maxWidth: '100%',
+    },
+    profilePicture: {
+      width: '100%',  
+      maxWidth: '400px', 
+      height: 'auto', 
+      borderRadius: '8px',
+    },
+  },
+  '@media (max-width: 480px)': {
+    header: {
+      fontSize: '22px', 
+    },
+    subHeader: {
+      fontSize: '16px', 
+    },
   },
 };
 

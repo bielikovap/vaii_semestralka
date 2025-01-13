@@ -2,6 +2,7 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/userModel.js';
+import mongoSanitize from 'mongo-sanitize'; 
 
 const router = express.Router();
 
@@ -9,7 +10,9 @@ router.post("/", async (req, res) => {
     console.log("Login attempt received with data:", req.body);
     const { email, password } = req.body;
 
+    email = mongoSanitize(email);
     try {
+
         const user = await User.findOne({ email });
         console.log("User found:", user);
 
