@@ -1,0 +1,35 @@
+# Setup projektu
+
+## 1. stiahnutie z repozitara
+na stiahnutie z repozitara pouzite v terminali prikaz:
+    git clone <repository-url>
+
+## 2. nainštalovanie dependencies
+presuňte sa do zložky frontend zo zložky src pomocou:
+    cd frontend
+
+nainštalujte nasledovné:
+    npm install
+    npm install axios
+    npm install react react-dom react-router-dom
+
+
+presuňte sa do zložky backend pomocou
+    cd backend
+
+nainštalujte nasledovné:
+    npm install
+    npm install express
+    npm install 
+    npm install bcryptjs jsonwebtoken
+    npm install cors
+    npm install nodemon
+
+## Ako spustiť?
+v zložke backend pustite nasledovný príkaz:
+    npm run start
+tymto spustite databazu. server bude pocuvat na nejakom porte.
+
+v zložke frontend pustite nasledovný príkaz:
+    npm run dev
+tymto spustite server. v konzole najdete link na local host.
