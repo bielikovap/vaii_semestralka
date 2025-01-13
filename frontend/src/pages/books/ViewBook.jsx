@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Header from '../../components/Header';
+import sanitize from 'mongo-sanitize';
 
 const ViewBook = () => {
-  window.scrollTo(0, 0);
+  //window.scrollTo(0, 0);
   const { id } = useParams();
   const [book, setBook] = useState(null);
   const [authors, setAuthors] = useState([]);
@@ -12,6 +13,8 @@ const ViewBook = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [review, setReview] = useState({ rating: 1, reviewText: '' });
   const [updatedBook, setUpdatedBook] = useState({
     title: '',
     author: '',
@@ -24,6 +27,11 @@ const ViewBook = () => {
   const [selectedAuthor, setSelectedAuthor] = useState(null);
   const navigate = useNavigate();
   const [userId, setUserId] = useState('');
+  const [reviews, setReviews] = useState([]);
+  const [reviewText, setReviewText] = useState('');
+  const [rating, setRating] = useState(1);
+
+  const [showReviews, setShowReviews] = useState(false);
 
   useEffect(() => {
     const fetchAuthors = async () => {
@@ -38,6 +46,21 @@ const ViewBook = () => {
     };
     fetchAuthors();
   }, []);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5554/${id}/reviews`);
+        console.log(response.data);
+        setReviews(response.data.reviews);
+      } catch (err) {
+        console.error('Error fetching reviews:', err.message);
+        setError('Failed to fetch reviews. Please try again later.');
+      }
+    };
+  
+    fetchReviews();
+  }, [id]);
 
   useEffect(() => {
     const fetchBook = async () => {
@@ -88,9 +111,10 @@ const ViewBook = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    const sanitizedValue = sanitize(value);
     setUpdatedBook((prevState) => ({
       ...prevState,
-      [name]: value,
+      [name]: sanitizedValue,
     }));
   };
 
@@ -101,49 +125,9 @@ const ViewBook = () => {
     setIsModalOpen(!isModalOpen);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    let validationError = '';
-
-    if (!updatedBook.title.trim()) {
-      validationError = 'Title is required.';
-    } else if (!selectedAuthor && !updatedBook.author) {
-      validationError = 'An author must be selected.';
-    } else if (
-      !updatedBook.publishYear ||
-      updatedBook.publishYear < 1000 ||
-      updatedBook.publishYear > new Date().getFullYear()
-    ) {
-      validationError = 'Please provide a valid publish year.';
-    } else if (!updatedBook.ISBN || updatedBook.ISBN.length < 10 || updatedBook.ISBN.length > 13) {
-      validationError = 'ISBN should be between 10 and 13 digits.';
-    } else if (!updatedBook.description.trim()) {
-      validationError = 'Description is required.';
-    } else if (!updatedBook.longDescription.trim()) {
-      validationError = 'Long description is required.';
-    }
-
-    if (validationError) {
-      
-      setError(validationError); 
-      return;
-    }
-
-    const payload = {
-      ...updatedBook,
-      author: selectedAuthor ? selectedAuthor._id : updatedBook.author,
-    };
-
-    try {
-      await axios.put(`http://localhost:5554/books/${id}`, payload);
-      toggleModal(); 
-      setBook(updatedBook); 
-    } catch (err) {
-      console.error('Error updating book:', err.message);
-      setError('Failed to update the book. Please try again.');
-    }
-  };
+  const toggleReviews = () => {
+    setShowReviews((prevState) => !prevState); 
+  }; 
 
   const handleSearchChange = (e) => {
     const query = e.target.value;
@@ -159,17 +143,19 @@ const ViewBook = () => {
     }
   };
 
+  const handleAddReviewClick = () => {
+    navigate(`/books/${id}/add-review`);
+  };
+
   const handleSelectAuthor = (author) => {
     setSearchQuery(author.name);
     setSelectedAuthor(author);
     setFilteredAuthors([]);
   };
 
-  const formStyle = {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px',
-  };
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>{error}</p>;
+  if (!book) return <p>No book found.</p>;
 
   return (
     <div className="container" style={{ marginTop: '80px' }}>
@@ -186,13 +172,14 @@ const ViewBook = () => {
           <div style={{ marginTop: '1rem' }}>
             <button
               onClick={toggleModal}
-              style={{ marginRight: '1rem', padding: '0.5rem 1rem', fontSize: '14px', color: '#4CAF50' }}
+              style={{ marginRight: '1rem', padding: '0.5rem 1rem', fontSize: '14px', color: '#4CAF50' ,fontFamily: 'against',}}
             >
               Edit Book
             </button>
             <button
               onClick={handleDelete}
               style={{
+                fontFamily: 'against',
                 color: 'red',
                 border: 'none',
                 background: 'none',
@@ -206,11 +193,11 @@ const ViewBook = () => {
           )}
         </div>
         <div className="book-info" style={{ flex: '2', paddingLeft: '20px', minWidth: '300px' }}>
-          <h1 style={{ fontSize: '30px', fontWeight: 'bold' }}>{book.title}</h1>
+          <h1 style={{ fontFamily: 'against',fontSize: '30px', fontWeight: 'bold' }}>{book.title}</h1>
           <p>
             <strong>Author:</strong>{' '}
             {book.author ? (
-              <Link to={`/authors/${book.author._id}`} style={{ textDecoration: 'none' }}>
+              <Link to={`/authors/${book.author._id}`} style={{ textDecoration: 'none',  }}>
                 {book.author.name}
               </Link>
             ) : (
@@ -227,8 +214,52 @@ const ViewBook = () => {
           <br />
           <br />
           <p>{book.longDescription}</p>
+
+          <div style={{ marginTop: '2rem' }}>
+          <button
+            onClick={handleAddReviewClick}
+            style={{ padding: '10px 20px', backgroundColor: '#4CAF50', color: 'white', fontFamily: 'against', }}
+          >
+            Add a Review
+          </button>
+        </div>
+
+          <div className="reviews-section" style={{ marginTop: '2rem' }}>
+            <h3 onClick={toggleReviews} style={{ cursor: 'pointer', color: '#4CAF50', fontFamily: 'against', }}>
+              Reviews
+            </h3>
+            {showReviews && (
+              <div>
+                {reviews.length > 0 ? (
+                  <ul style={{ listStyleType: 'none', paddingLeft: '0' }}>
+                    {reviews.map((review, index) => (
+                      <li key={index} style={{ marginBottom: '20px' }}>
+                        <div style={{ fontWeight: 'bold' }}>
+                          Rating: {review.rating} / 5
+                        </div>
+                        <p>{review.reviewText}</p>
+                        <p>
+                    <strong>Reviewed by:</strong>{' '}
+                    <Link to={`/users/${review.user._id}`} style={{ textDecoration: 'none', color: '#007BFF' }}>
+                      {review.user.username}
+                    </Link>
+                  </p>
+                        <p>
+                          <strong>Posted on:</strong> {new Date(review.createdAt).toLocaleDateString()}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>No reviews yet.</p>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
+
+      
 
       {isModalOpen && (
         <div className="modal" style={modalStyle}>

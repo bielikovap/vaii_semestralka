@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-
+import sanitize from 'mongo-sanitize';
 import Header from '../../components/Header';
 
 const AddBook = () => {
@@ -50,7 +50,11 @@ const AddBook = () => {
     const fetchAuthors = async () => {
       try {
         const response = await axios.get('http://localhost:5554/authors');
-        setAuthorsList(response.data); 
+        const sanitizedAuthors = response.data.map(authorItem => ({
+          ...authorItem,
+          name: sanitize(authorItem.name), 
+        }));
+        setAuthorsList(sanitizedAuthors);  
       } catch (err) {
         console.error('Failed to fetch authors', err);
         alert('Failed to fetch authors. Please try again.');
@@ -69,8 +73,16 @@ const AddBook = () => {
     }
 
     try {
-      const newBook = { title, author, publishYear, ISBN, description, longDescription, bookCover };
-      await axios.post('http://localhost:5554/books', newBook);
+      const sanitizedBook = {
+        title: sanitize(title),
+        author: sanitize(author),
+        publishYear: sanitize(publishYear),
+        ISBN: sanitize(ISBN),
+        description: sanitize(description),
+        longDescription: sanitize(longDescription),
+        bookCover: sanitize(bookCover),
+      };
+      await axios.post('http://localhost:5554/books', sanitizedBook);
       alert('Book added successfully!');
       navigate('/'); 
     } catch (err) {
@@ -197,6 +209,7 @@ const styles = {
     backgroundColor: '#fff',
   },
   headerText: {
+    fontFamily: 'against',
     textAlign: 'center',
     marginBottom: '20px',
     fontSize: '24px',
@@ -204,6 +217,7 @@ const styles = {
     color: '#333',
   },
   form: {
+    fontFamily: 'against',
     display: 'flex',
     flexDirection: 'column',
     gap: '20px',

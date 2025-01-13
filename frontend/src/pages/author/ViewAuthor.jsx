@@ -85,9 +85,9 @@ const ViewAuthor = () => {
         )}
       </div>
       <div style={styles.infoContainer}>
-        <h2 style={{ ...styles.header, fontWeight: 'bold' }}>{author.name}</h2>
+        <h2 style={{ ...styles.header, fontWeight: 'bold', fontFamily: 'against', }}>{author.name}</h2>
         <div style={styles.bio}>
-          <h3 style={{ fontWeight: 'bold' }}>Biography</h3>
+          <h3 style={{ fontWeight: 'bold', fontFamily: 'against', }}>Biography</h3>
           <p>{author.bio || 'No biography available.'}</p>
         </div>
         {author.dateOfBirth && (
@@ -118,6 +118,7 @@ const ViewAuthor = () => {
 
 const styles = {
   detailsContainer: {
+    fontFamily: 'against',
     display: 'flex',
     flexDirection: 'row',
     gap: '20px',
@@ -162,6 +163,7 @@ const styles = {
     transition: 'background-color 0.3s ease',
   },
   infoContainer: {
+
     flex: 2,
     maxWidth: '66.66%',  
     display: 'flex',

@@ -1,3 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+@font-face { font-family: 'against'; src: url('/against regular.ttf') format('truetype'); } body { font-family: 'MyCustomFont', sans-serif; }
+@font-face { font-family: 'social'; src: url('/Social Confident.otf') format('truetype'); } body { font-family: 'MyCustomFont', sans-serif; }

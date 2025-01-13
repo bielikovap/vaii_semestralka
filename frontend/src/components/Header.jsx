@@ -3,26 +3,59 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const Header = () => {
-  const [userId, setUserId] = useState(null);
+  const [userId, setUserId] = useState(null); 
+  const [username, setUsername] = useState(null);
   const navigate = useNavigate();
+  const [dropdownVisible, setDropdownVisible] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
       try {
         const decodedToken = JSON.parse(atob(token.split('.')[1]));
-        setUserId(decodedToken.userId); 
+        const userIdFromToken = decodedToken.userId; 
+        setUserId(userIdFromToken);
+        if (userIdFromToken) {
+          fetchUsername(userIdFromToken); 
+        }
       } catch (error) {
         console.error('Failed to decode token:', error);
-        setUserid(null);
+        setUserId(null)
+        setUsername(null);
       }
     }
   }, []);
 
+  useEffect(() => {
+    if (userId) {
+      fetchUsername(userId); 
+    }
+  }, [userId]);
+
+  const fetchUsername = async (userId) => {
+    try {
+      const response = await axios.get(`http://localhost:5554/users/${userId}`);
+      setUsername(response.data.username);
+    } catch (error) {
+      console.error('Failed to fetch username:', error);
+      setUsername(null);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     setUserId(null);
+    setUsername(null);
+    setDropdownVisible(false);
     navigate('/');
+  };
+
+  const toggleDropdown = () => {
+    setDropdownVisible(!dropdownVisible);
+  };
+
+  const closeDropdown = () => {
+    setDropdownVisible(false);
   };
 
   return (
@@ -30,12 +63,25 @@ const Header = () => {
       <button onClick={() => navigate('/')}>Home</button>
       <button onClick={() => navigate(-1)}>Back</button>
       <div style={userSectionStyle}>
-        {userId ? (
-          <div>
-            <span style={userNameStyle}>Welcome, {userId}</span>
-            <button onClick={handleLogout} style={logoutButtonStyle}>
-              Log Out
-            </button>
+        {username ? (
+        <div style={{ position: 'relative', fontFamily: 'against' }}> 
+             <span 
+              style={userNameStyle} 
+              onClick={toggleDropdown}
+            >
+              Welcome, {username} ▼
+            </span>
+
+            {dropdownVisible && (
+              <div style={dropdownStyle}>
+                <button 
+                  style={dropdownItemStyle} 
+                  onClick={handleLogout}
+                >
+                  Log Out
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           <button onClick={() => navigate('/login')} style={loginButtonStyle}>
@@ -49,6 +95,7 @@ const Header = () => {
 
 // Styles
 const headerStyle = {
+  fontFamily: 'against',
   padding: '10px',
   backgroundColor: '#f0f0f0',
   display: 'flex',
@@ -73,6 +120,7 @@ const userNameStyle = {
 };
 
 const loginButtonStyle = {
+  fontFamily: 'against',
   padding: '8px 16px',
   backgroundColor: '#4CAF50',
   color: 'white',
@@ -85,5 +133,30 @@ const logoutButtonStyle = {
   ...loginButtonStyle,
   backgroundColor: '#FF5252',
 };
+
+const dropdownStyle = {
+  fontFamily: 'against',
+  position: 'absolute',
+  top: '100%',
+  right: '0',
+  backgroundColor: '#fff',
+  border: '1px solid #ddd',
+  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+  borderRadius: '5px',
+  overflow: 'hidden',
+  zIndex: 1000,
+};
+
+const dropdownItemStyle = {
+  fontFamily: 'against',
+  padding: '10px 20px',
+  backgroundColor: '#fff',
+  color: '#333',
+  border: 'none',
+  textAlign: 'left',
+  width: '100%',
+  cursor: 'pointer',
+};
+
 
 export default Header;

@@ -67,6 +67,7 @@ const ViewAllAuthors = () => {
     fontSize: '1.5em',
     marginBottom: '10px',
     textDecoration: 'none',  
+    fontFamily: 'against',
   };
 
   const authorBioStyle = {
@@ -85,7 +86,7 @@ const ViewAllAuthors = () => {
     <div>
         <Header />
 
-      <div style={{ padding: '20px', marginTop: '50px' }}>
+      <div style={{ padding: '20px', marginTop: '50px', }}>
       <input
         type="text"
         placeholder="Hľadaj autorov podľa mena..."

@@ -9,6 +9,8 @@ import ViewAllAuthors from './pages/author/ViewAllAuthors.jsx'
 import EditAuthor from './pages/author/EditAuthor.jsx';
 import AddAuthor from './pages/author/AddAuthor.jsx';
 import Login from './components/Login.jsx';
+import AddReview from './pages/reviews/AddReview.jsx';
+import ViewAccount from './pages/users/ViewUser.jsx';
 
 document.body.style.overflowX = 'hidden'; 
 
@@ -25,6 +27,9 @@ const App = () => {
       <Route path="/edit-author/:id" element={<EditAuthor />}/>
       <Route path="/add-author" element={<AddAuthor />}/>
       <Route path="/login" element={<Login />} /> 
+      <Route path="/books/:id/add-review" element={<AddReview />} />
+      <Route path="/users/:userId" element={<ViewAccount />} />
+      
     </Routes>
   );
 };

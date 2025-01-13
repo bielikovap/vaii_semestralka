@@ -78,6 +78,8 @@ const ViewBooks = () => {
     border: '1px solid #ccc',
     padding: '20px',
     backgroundColor: '#f9f9f9',
+    fontFamily: 'against',
+    fontSize: '15px'
   };
 
   const imageStyles = {
@@ -107,12 +109,12 @@ const ViewBooks = () => {
     <div>
       <Header/>
 
-      <h1 style={{ textAlign: 'center' }}>All Books</h1>
-      <button onClick={toggleView} style={{ marginTop: "50px", marginBottom: '20px', display: 'block', marginLeft: 'auto', marginRight: 'auto' }}>
+      <h1 style={{ textAlign: 'center', fontFamily: 'against', }}>All Books</h1>
+      <button onClick={toggleView} style={{fontFamily: 'against', marginTop: "50px", marginBottom: '20px', display: 'block', marginLeft: 'auto', marginRight: 'auto' }}>
         Switch to {viewMode === 'grid' ? 'List' : 'Grid'} View
       </button>
 
-      <div style={{ padding: '20px', marginTop: '0px' }}> 
+      <div style={{ padding: '20px', marginTop: '0px', fontFamily: 'against', }}> 
         <input 
           type="text" 
           placeholder="Filter by book name..." 
@@ -132,7 +134,7 @@ const ViewBooks = () => {
           /> 
       </div>
 
-      <button onClick={() => setShowAuthorsFilter(!showAuthorsFilter)} style={{ display: 'block', marginLeft: 'auto', marginRight: 'auto', marginBottom: '20px' }}>
+      <button onClick={() => setShowAuthorsFilter(!showAuthorsFilter)} style={{fontFamily: 'against', display: 'block', marginLeft: 'auto', marginRight: 'auto', marginBottom: '20px' }}>
         Filter by Authors
       </button>
 

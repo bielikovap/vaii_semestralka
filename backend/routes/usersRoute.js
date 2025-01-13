@@ -67,7 +67,7 @@ router.post('/', async (request, response) => {
   
       return response.status(200).json(user);
     } catch (error) {
-      console.log(error.message);
+      console.log(error.message + "lalal");
       response.status(500).send({ message: error.message });
     }
   });
@@ -103,7 +103,5 @@ router.post('/', async (request, response) => {
     response.status(500).send({ message: error.message });
   }
 });
-
-
 
 export default router;

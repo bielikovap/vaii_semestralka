@@ -95,6 +95,7 @@ const Home = () => {
     cursor: 'pointer',
     fontSize: '12px',
     marginTop: '5px',
+    
   };
 
   const deleteButtonStyle = {
@@ -115,9 +116,9 @@ const Home = () => {
       }}
     >
       <HeaderHome/>
-      <h1 style={{ margin: '0', fontSize: '30px', fontWeight: 'bold', marginTop: '50px' }}>BookCorner</h1>
+      <h1 style={{ fontFamily: 'against', margin: '0', fontSize: '30px', fontWeight: 'bold', marginTop: '50px' }}>BookCorner</h1>
 
-      <h2 style={{ fontSize: '24px', fontWeight: 'bold' }}>Recently added books:</h2>
+      <h2 style={{ fontFamily: 'against' , fontSize: '24px', fontWeight: 'bold' }}>Recently added books:</h2>
 
       {books.length === 0 ? (
         <p>No books available</p>
@@ -176,7 +177,7 @@ const Home = () => {
       </div>
 
         )}
-      <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginTop: "10px"}}>Recently added authors:</h2>
+      <h2 style={{ fontFamily: 'against', fontSize: '24px', fontWeight: 'bold', marginTop: "10px"}}>Recently added authors:</h2>
 
       {authors.length === 0 ? (
         <p>No authors available</p>

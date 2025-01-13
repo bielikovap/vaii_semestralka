@@ -2,6 +2,8 @@ import React, { useState , useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/Header';
+import sanitize from 'mongo-sanitize';
+
 
 const AddAuthor = () => {
   const [name, setName] = useState('');
@@ -41,7 +43,17 @@ const AddAuthor = () => {
     e.preventDefault();
     setLoading(true);
 
+    const sanitizedData = {
+      name: sanitize(name),
+      bio: sanitize(bio),
+      dateOfBirth: sanitize(dateOfBirth),
+      profilePicture: sanitize(profilePictureUrl),
+    };
+
     const formData = new FormData();
+  Object.keys(sanitizedData).forEach((key) => {
+    formData.append(key, sanitizedData[key]);
+  });
     formData.append('name', name);
     formData.append('bio', bio);
     formData.append('dateOfBirth', dateOfBirth);
@@ -76,7 +88,7 @@ const AddAuthor = () => {
     <div style={styles.container}>
       <Header/>
       <form onSubmit={handleSubmit} style={styles.form}>
-        <h2 style={{ ...styles.header, marginTop: "50px" }}>Add New Author</h2>
+        <h2 style={{ ...styles.header, marginTop: "50px", fontFamily: 'against', }}>Add New Author</h2>
         <div style={styles.inputContainer}>
           <label>Name:</label>
           <input
