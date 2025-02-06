@@ -118,7 +118,6 @@ const HeaderHome = () => {
     localStorage.removeItem('token');
     setUserId(null);
     setUsername(null);
-    setDropdownVisible(false);
     navigate('/');
   };
 

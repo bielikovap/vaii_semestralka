@@ -66,16 +66,27 @@ const Home = () => {
     }
   
     try {
-      const response = await axios.post('http://localhost:5554/suggestions', {
+      const suggestionData = {
         suggestion,
-        type: suggestionType,
-        submittedBy: userId 
-      });
+        type: suggestionType
+      };
+  
+      if (userId) {
+        suggestionData.submittedBy = userId;
+      }
+  
+      const response = await axios.post('http://localhost:5554/suggestions', suggestionData);
+      
       setSuggestionSuccess(true);
       setSuggestion('');
       setSuggestionType('book');
+      setShowSuggestionForm(false);
+  
+      setTimeout(() => {
+        setSuggestionSuccess(false);
+      }, 3000);
     } catch (error) {
-      setSuggestionError(error.response?.data?.error || 'Something went wrong');
+      setSuggestionError(error.response?.data?.message || 'Failed to submit suggestion');
     }
   };
 
@@ -272,12 +283,18 @@ const Home = () => {
               placeholder="Enter your suggestion here..."
               style={styles.textarea}
               required
+              minLength={10}
+              maxLength={500}
             />
             <button type="submit" style={styles.submitButton}>
-              Submit Suggestion
+              Submit {userId ? 'as ' + localStorage.getItem('username') : 'Anonymously'}
             </button>
             {suggestionError && <div style={styles.error}>{suggestionError}</div>}
-            {suggestionSuccess && <div style={styles.success}>Thank you for your suggestion!</div>}
+            {suggestionSuccess && (
+              <div style={styles.success}>
+                Thank you for your suggestion! {userId ? 'We\'ll notify you when it\'s reviewed.' : ''}
+              </div>
+            )}
           </form>
         )}
       </div>

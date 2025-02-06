@@ -81,7 +81,6 @@ const Header = () => {
     localStorage.removeItem('token');
     setUserId(null);
     setUsername(null);
-    setDropdownVisible(false);
     navigate('/');
   };
 

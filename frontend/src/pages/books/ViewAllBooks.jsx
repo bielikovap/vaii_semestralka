@@ -120,6 +120,7 @@ const ViewBooks = () => {
           placeholder="Filter by book name..." 
           value={bookFilter} 
           onChange={(e) => {
+            setBookFilter(e.target.value); 
             console.log('BookFilter updated:', e.target.value);
           }} 
           style={{ 

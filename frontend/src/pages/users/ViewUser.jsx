@@ -544,40 +544,42 @@ const ViewUser = () => {
                   style={styles.profileImage}
                 />
                 
-                <div style={styles.imageEditSection}>
-                  <button 
-                    onClick={() => setIsEditingImage(!isEditingImage)}
-                    style={styles.editButton}
-                  >
-                    {isEditingImage ? 'Cancel' : 'Change Profile Picture'}
-                  </button>
+                {loggedInUserId === userId && (
+                  <div style={styles.imageEditSection}>
+                    <button 
+                      onClick={() => setIsEditingImage(!isEditingImage)}
+                      style={styles.editButton}
+                    >
+                      {isEditingImage ? 'Cancel' : 'Change Profile Picture'}
+                    </button>
 
-                  {isEditingImage && (
-                    <div style={styles.uploadSection}>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageSelect}
-                        style={styles.fileInput}
-                        id="imageInput"
-                      />
-                      <label htmlFor="imageInput" style={styles.fileInputLabel}>
-                        Select Image
-                      </label>
-                      
-                      {imagePreview && (
-                        <>
-                          <img src={imagePreview} alt="Preview" style={styles.previewImage} />
-                          <button onClick={handleImageUpload} style={styles.uploadButton}>
-                            Upload
-                          </button>
-                        </>
-                      )}
-                      
-                      {uploadError && <div style={styles.error}>{uploadError}</div>}
-                    </div>
-                  )}
-                </div>
+                    {isEditingImage && (
+                      <div style={styles.uploadSection}>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageSelect}
+                          style={styles.fileInput}
+                          id="imageInput"
+                        />
+                        <label htmlFor="imageInput" style={styles.fileInputLabel}>
+                          Select Image
+                        </label>
+                        
+                        {imagePreview && (
+                          <>
+                            <img src={imagePreview} alt="Preview" style={styles.previewImage} />
+                            <button onClick={handleImageUpload} style={styles.uploadButton}>
+                              Upload
+                            </button>
+                          </>
+                        )}
+                        
+                        {uploadError && <div style={styles.error}>{uploadError}</div>}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div style={styles.infoSection}>
