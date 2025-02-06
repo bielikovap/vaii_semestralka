@@ -2,8 +2,7 @@
 
 ## 1. stiahnutie z repozitara
 na stiahnutie z repozitara pouzite v terminali prikaz:
-    git clone <repository-url>
-
+    git clone https://github.com/bielikovap/vaii_semestralka.git
 ## 2. nainštalovanie dependencies
 presuňte sa do zložky frontend zo zložky src pomocou:
     cd frontend
@@ -15,6 +14,7 @@ nainštalujte nasledovné:
 
 
 presuňte sa do zložky backend pomocou
+    cd .. (na vrátenie sa do zlozky sem_praca)
     cd backend
 
 nainštalujte nasledovné:
