@@ -266,14 +266,21 @@ const ViewBook = () => {
           <br />
           <p>{book?.longDescription}</p>
 
-          <div style={{ marginTop: '2rem' }}>
-          <button
-            onClick={handleAddReviewClick}
-            style={{ padding: '10px 20px', backgroundColor: '#734f96', color: 'white', fontFamily: 'against', }}
-          >
-            Add a Review
-          </button>
-        </div>
+          {userId && (
+            <div style={{ marginTop: '2rem' }}>
+              <button
+                onClick={handleAddReviewClick}
+                style={{ 
+                  padding: '10px 20px', 
+                  backgroundColor: '#734f96', 
+                  color: 'white', 
+                  fontFamily: 'against',
+                }}
+              >
+                Add a Review
+              </button>
+            </div>
+          )}
 
           <div className="reviews-section" style={{ marginTop: '2rem' }}>
             <h3 onClick={toggleReviews} style={{ cursor: 'pointer', color: '#734f96', fontFamily: 'against', }}>
