@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 
 const Header = () => {
@@ -7,6 +7,7 @@ const Header = () => {
   const [username, setUsername] = useState(null);
   const navigate = useNavigate();
   const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -64,20 +65,20 @@ const Header = () => {
       <button onClick={() => navigate(-1)}>Back</button>
       <div style={userSectionStyle}>
         {username ? (
-        <div style={{ position: 'relative', fontFamily: 'against' }}> 
-             <span 
-              style={userNameStyle} 
-              onClick={toggleDropdown}
-            >
-              Welcome, {username} ▼
+          <div 
+            style={{ position: 'relative', fontFamily: 'against' }}
+            onMouseEnter={() => setShowDropdown(true)}
+            onMouseLeave={() => setShowDropdown(false)}
+          > 
+            <span style={userNameStyle}>
+              Welcome, {username}
             </span>
-
-            {dropdownVisible && (
+            {showDropdown && (
               <div style={dropdownStyle}>
-                <button 
-                  style={dropdownItemStyle} 
-                  onClick={handleLogout}
-                >
+                <Link to={`/users/${userId}`} style={dropdownItemStyle}>
+                  My Profile
+                </Link>
+                <button onClick={handleLogout} style={dropdownItemStyle}>
                   Log Out
                 </button>
               </div>
@@ -93,11 +94,12 @@ const Header = () => {
   );
 };
 
-// Styles
+
 const headerStyle = {
   fontFamily: 'against',
   padding: '10px',
-  backgroundColor: '#f0f0f0',
+  //backgroundColor: '#f0f0f0',
+  backgroundColor: '#734f96',
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
@@ -106,6 +108,7 @@ const headerStyle = {
   top: '0',
   left: '0',
   zIndex: 1000,
+  color: 'white',
 };
 
 const userSectionStyle = {
@@ -116,14 +119,14 @@ const userSectionStyle = {
 
 const userNameStyle = {
   fontSize: '16px',
-  color: '#333',
+  color: 'white',
 };
 
 const loginButtonStyle = {
   fontFamily: 'against',
   padding: '8px 16px',
-  backgroundColor: '#4CAF50',
-  color: 'white',
+  backgroundColor: '#DFC5FE',
+  color: 'black',
   border: 'none',
   borderRadius: '5px',
   cursor: 'pointer',

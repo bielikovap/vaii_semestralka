@@ -10,6 +10,7 @@ import EditAuthor from './pages/author/EditAuthor.jsx';
 import AddAuthor from './pages/author/AddAuthor.jsx';
 import Login from './components/Login.jsx';
 import ViewAccount from './pages/users/ViewUser.jsx';
+import AddReview from './pages/review/AddReview.jsx';
 
 document.body.style.overflowX = 'hidden'; 
 
@@ -27,7 +28,7 @@ const App = () => {
       <Route path="/add-author" element={<AddAuthor />}/>
       <Route path="/login" element={<Login />} /> 
       <Route path="/users/:userId" element={<ViewAccount />} />
-      
+      <Route path="/books/:bookId/add-review" element={<AddReview />} />
     </Routes>
   );
 };

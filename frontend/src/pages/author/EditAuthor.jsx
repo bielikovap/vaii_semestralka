@@ -16,7 +16,34 @@ const EditAuthor = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
+  const [token, setToken] = useState(localStorage.getItem('token')); 
+  const [userId, setUserId] = useState('');
 
+
+
+  useEffect(() => {
+    const checkAdmin = () => { 
+      if (!token) { 
+        //console.error('not logged in'); 
+        alert('You do not have access to this page'); 
+        navigate('/login');
+        return;
+      }
+        
+      let decodedToken; try { decodedToken = JSON.parse(atob(token.split('.')[1])); } catch (error) { console.error('Invalid token', error); alert('You do not have access to this page'); navigate('/'); return; }
+        console.log('Decoded Token:', decodedToken);
+        if (decodedToken.role !== 'admin') { 
+          console.error('not an admin'); 
+          alert('You do not have access to this page'); 
+          navigate('/');
+          } else { 
+             setUserId(decodedToken.userId);
+          } }; 
+          checkAdmin(); 
+        }, 
+        
+    [token, navigate]);
+  
   useEffect(() => {
     const fetchAuthor = async () => {
       try {
@@ -183,7 +210,7 @@ const headingStyle = {
 };
 
 const formStyle = {
-  fontFamily: 'against',
+  
   display: 'flex',
   flexDirection: 'column',
   gap: '20px',

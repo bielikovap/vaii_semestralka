@@ -193,7 +193,7 @@ const styles = {
   },
   bookLink: {
     textDecoration: 'none',
-    color: '#4CAF50',
+    color: '#734f96',
   },
   '@media (max-width: 768px)': {
     detailsContainer: {

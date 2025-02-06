@@ -10,7 +10,6 @@ router.post("/", async (req, res) => {
     console.log("Login attempt received with data:", req.body);
     const { email, password } = req.body;
 
-    email = mongoSanitize(email);
     try {
 
         const user = await User.findOne({ email });

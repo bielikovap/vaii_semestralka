@@ -33,6 +33,8 @@ const ViewBook = () => {
 
   const [showReviews, setShowReviews] = useState(false);
 
+  const [formData, setFormData] = useState({...book});
+
   useEffect(() => {
     const fetchAuthors = async () => {
       try {
@@ -50,9 +52,10 @@ const ViewBook = () => {
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        const response = await axios.get(`http://localhost:5554/${id}/reviews`);
+        console.log("book ID from URL:", id);
+        const response = await axios.get(`http://localhost:5554/reviews/book/${id}`);
         console.log(response.data);
-        setReviews(response.data.reviews);
+        setReviews(response.data);
       } catch (err) {
         console.error('Error fetching reviews:', err.message);
         setError('Failed to fetch reviews. Please try again later.');
@@ -66,19 +69,44 @@ const ViewBook = () => {
     const fetchBook = async () => {
       try {
         const response = await axios.get(`http://localhost:5554/books/${id}`);
-        setBook(response.data);
-        setUpdatedBook(response.data);
-      } catch (err) {
-        setError('Failed to fetch book details. Please try again later.');
-        console.error('Error fetching book details:', err.message);
+        const bookData = response.data;
+        setBook(bookData);
+        setFormData({
+          id: bookData._id,
+          title: bookData.title || '',
+          author: bookData.author?._id || '',
+          ISBN: bookData.ISBN || '',
+          description: bookData.description || '',
+          longDescription: bookData.longDescription || '',
+          bookCover: bookData.bookCover || '',
+          publishYear: bookData.publishYear || ''
+        });
+      } catch (error) {
+        setError(error.message);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchBook();
+    if (id) {
+      fetchBook();
+    }
   }, [id]);
 
+  useEffect(() => {
+    if (book) {
+      setFormData({
+        id: id,
+        title: book.title,
+        author: book.author,
+        publishYear: book.publishYear,
+        ISBN: book.ISBN,
+        description: book.description,
+        longDescription: book.longDescription,
+        bookCover: book.bookCover
+      });
+    }
+  }, [book]);
 
   useEffect(() => { 
     const checkUser = () => { 
@@ -109,18 +137,9 @@ const ViewBook = () => {
     }
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    const sanitizedValue = sanitize(value);
-    setUpdatedBook((prevState) => ({
-      ...prevState,
-      [name]: sanitizedValue,
-    }));
-  };
-
   const toggleModal = () => {
-    if (isModalOpen) {
-      setUpdatedBook(book); 
+    if (!isModalOpen) {
+      setFormData({...book});
     }
     setIsModalOpen(!isModalOpen);
   };
@@ -151,6 +170,29 @@ const ViewBook = () => {
     setSearchQuery(author.name);
     setSelectedAuthor(author);
     setFilteredAuthors([]);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const submitData = {
+      ...formData,
+      year: Number(formData.year) 
+    };
+    try {
+      const response = await axios.put(`http://localhost:5554/books/${id}`, formData);
+      setBook(response.data);
+      toggleModal();
+    } catch (err) {
+      console.error('Error updating book:', err.message);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   if (loading) return <p>Loading...</p>;
@@ -218,14 +260,14 @@ const ViewBook = () => {
           <div style={{ marginTop: '2rem' }}>
           <button
             onClick={handleAddReviewClick}
-            style={{ padding: '10px 20px', backgroundColor: '#4CAF50', color: 'white', fontFamily: 'against', }}
+            style={{ padding: '10px 20px', backgroundColor: '#734f96', color: 'white', fontFamily: 'against', }}
           >
             Add a Review
           </button>
         </div>
 
           <div className="reviews-section" style={{ marginTop: '2rem' }}>
-            <h3 onClick={toggleReviews} style={{ cursor: 'pointer', color: '#4CAF50', fontFamily: 'against', }}>
+            <h3 onClick={toggleReviews} style={{ cursor: 'pointer', color: '#734f96', fontFamily: 'against', }}>
               Reviews
             </h3>
             {showReviews && (
@@ -272,8 +314,8 @@ const ViewBook = () => {
     <input
       type="text"
       name="title"
-      value={updatedBook.title}
-      onChange={handleChange}
+      value={formData.title}
+      onChange={handleInputChange}
       required
       style={inputStyle}
     />
@@ -301,13 +343,13 @@ const ViewBook = () => {
       </ul>
     )}
   </div>
-              <div style={formGroupStyle}>
+  <div style={formGroupStyle}>
                 <label>Publish Year</label>
                 <input
                   type="number"
                   name="publishYear"
-                  value={updatedBook.publishYear}
-                  onChange={handleChange}
+                  value={formData.publishYear}
+                  onChange={handleInputChange}
                   required
                   style={inputStyle}
                 />
@@ -317,8 +359,8 @@ const ViewBook = () => {
                 <input
                   type="text"
                   name="ISBN"
-                  value={updatedBook.ISBN}
-                  onChange={handleChange}
+                  value={formData.ISBN}
+                  onChange={handleInputChange}
                   required
                   style={inputStyle}
                 />
@@ -327,8 +369,8 @@ const ViewBook = () => {
                 <label>Description</label>
                 <textarea
                   name="description"
-                  value={updatedBook.description}
-                  onChange={handleChange}
+                  value={formData.description}
+                  onChange={handleInputChange}
                   style={textareaStyle}
                 />
               </div>
@@ -336,9 +378,9 @@ const ViewBook = () => {
               <div style={formGroupStyle}>
                 <label>Long Description</label>
                 <textarea
-                  name="description"
-                  value={updatedBook.longDescription}
-                  onChange={handleChange}
+                  name="longDescription"
+                  value={formData.longDescription}
+                  onChange={handleInputChange}
                   style={textareaStyle}
                 />
               </div>
@@ -347,8 +389,8 @@ const ViewBook = () => {
                 <input
                   type="text"
                   name="bookCover"
-                  value={updatedBook.bookCover}
-                  onChange={handleChange}
+                  value={formData.bookCover}
+                  onChange={handleInputChange}
                   required
                   style={inputStyle}
                 />

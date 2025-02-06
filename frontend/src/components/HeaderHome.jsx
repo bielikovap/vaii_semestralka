@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 
 const HeaderHome = () => {
   const [userId, setUserId] = useState(null); 
   const [username, setUsername] = useState(null);
-  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -46,125 +46,97 @@ const HeaderHome = () => {
     localStorage.removeItem('token');
     setUserId(null);
     setUsername(null);
-    setDropdownVisible(false);
-    navigate('/');
-  };
-
-  const toggleDropdown = () => {
-    setDropdownVisible(!dropdownVisible);
-  };
-
-  const closeDropdown = () => {
-    setDropdownVisible(false);
+    navigate('/login');
   };
 
   return (
-    <header style={headerStyle}>
-      <div style={userSectionStyle}>
-        {username ? (
-          <div style={{ position: 'relative', fontFamily: 'against' }}>
-            <span 
-              style={userNameStyle} 
-              onClick={toggleDropdown}
-            >
-              Welcome, {username} ▼
-            </span>
-
-            {dropdownVisible && (
-              <div style={dropdownStyle}>
-                <button 
-                  style={dropdownItemStyle} 
-                  onClick={handleLogout}
-                >
-                  Log Out
-                </button>
-              </div>
-            )}
-          </div>
-        ) : (
-          <button onClick={() => navigate('/login')} style={loginButtonStyle}>
-            Log In
-          </button>
-        )}
-      </div>
+    <header style={styles.header}>
+      {username ? (
+        <div 
+          style={styles.userMenu}
+          onMouseEnter={() => setShowDropdown(true)}
+          onMouseLeave={() => setShowDropdown(false)}
+        >
+          <span style={styles.welcome}>Welcome, {username}</span>
+          {showDropdown && (
+            <div style={styles.dropdown}>
+              <Link to={`/users/${userId}`} style={styles.dropdownItem}>
+                My Profile
+              </Link>
+              <button 
+                onClick={handleLogout} 
+                style={styles.dropdownItem}
+              >
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
+      ) : (
+        <button onClick={() => navigate('/login')} style={styles.loginButton}>
+          Login
+        </button>
+      )}
     </header>
   );
 };
 
-// Styles
-const headerStyle = {
-  fontFamily: 'against',
-  padding: '10px',
-  backgroundColor: '#f0f0f0',
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  width: '100%',
-  position: 'fixed',
-  top: '0',
-  left: '0',
-  zIndex: 1000,
-};
-
-const userSectionStyle = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '10px',
-};
-
-const userNameStyle = {
-  fontSize: '16px',
-  color: '#333',
-  cursor: 'pointer',
-};
-
-const loginButtonStyle = {
-  fontFamily: 'against',
-  padding: '8px 16px',
-  backgroundColor: '#4CAF50',
-  color: 'white',
-  border: 'none',
-  borderRadius: '5px',
-  cursor: 'pointer',
-};
-
-const buttonStyle = {
-  fontFamily: 'against',
-  padding: '8px 16px',
-  backgroundColor: '#4CAF50',
-  color: 'white',
-  border: 'none',
-  borderRadius: '5px',
-  cursor: 'pointer',
-};
-
-const logoutButtonStyle = {
-  ...loginButtonStyle,
-  backgroundColor: '#FF5252',
-};
-
-const dropdownStyle = {
-  fontFamily: 'against',
-  position: 'absolute',
-  top: '100%',
-  right: '0',
-  backgroundColor: '#fff',
-  border: '1px solid #ddd',
-  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-  borderRadius: '5px',
-  overflow: 'hidden',
-  zIndex: 1000,
-};
-
-const dropdownItemStyle = {
-  fontFamily: 'against',
-  padding: '10px 20px',
-  backgroundColor: '#fff',
-  color: '#333',
-  border: 'none',
-  textAlign: 'left',
-  width: '100%',
-  cursor: 'pointer',
+const styles = {
+  header: {
+    fontFamily: 'against',
+    padding: '10px',
+    //backgroundColor: '#f0f0f0',
+    backgroundColor: '#734f96',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    position: 'fixed',
+    top: '0',
+    left: '0',
+    zIndex: 1000,
+    color: 'white'
+    },
+  userMenu: {
+    position: 'relative',
+    cursor: 'pointer',
+  },
+  welcome: {
+    fontFamily: 'against',
+    color: 'white',
+  },
+  dropdown: {
+    position: 'absolute',
+    top: '100%',
+    right: 0,
+    backgroundColor: '#fff',
+    border: '1px solid #ddd',
+    borderRadius: '4px',
+    boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+    zIndex: 1000,
+    minWidth: '150px',
+  },
+  dropdownItem: {
+    display: 'block',
+    width: '100%',
+    padding: '10px 15px',
+    fontFamily: 'against',
+    color: '#333',
+    textDecoration: 'none',
+    border: 'none',
+    backgroundColor: 'transparent',
+    cursor: 'pointer',
+    textAlign: 'left',
+  },
+  loginButton: {
+    fontFamily: 'against',
+    padding: '8px 16px',
+    backgroundColor: '#DFC5FE',
+    color: 'black',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+  }
 };
 
 export default HeaderHome;

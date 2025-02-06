@@ -19,9 +19,9 @@ app.use((req, res, next) => { console.log(`Received ${req.method} request for ${
 app.use("/books", booksRoute);
 app.use("/authors", authorsRoute);
 app.use("/users", usersRoute);
-app.use("/", reviewsRoute);
 
 app.use("/login", authRoute);
+app.use("/reviews", reviewsRoute);  
 
 
 

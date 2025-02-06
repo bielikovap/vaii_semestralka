@@ -35,7 +35,13 @@ const bookSchema = mongoose.Schema(
       bookCover: {
         type: String,
         required: true,
-      }
+      },
+      reviews: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Review',
+        }
+      ]
     },
     {
       timestamps: true,
