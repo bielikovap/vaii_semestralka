@@ -5,7 +5,6 @@ import sanitize from 'mongo-sanitize';
 
 const router = express.Router();
 
-// GET all reviews
 router.get('/', async (req, res) => {
     try {
         const reviews = await Review.find()
@@ -17,30 +16,24 @@ router.get('/', async (req, res) => {
     }
 });
 
-// GET reviews by bookId
 router.get('/book/:bookId', async (req, res) => {
     try {
-        const bookId = sanitize(req.params.bookId);
-        
-        // Validate book exists
-        const book = await Book.findById(bookId);
-        if (!book) {
-            return res.status(404).json({ message: 'Book not found' });
-        }
+        const reviews = await Review.find({ book: req.params.bookId })
+            .populate('user', 'username profileImage _id')
+            .populate('book', 'title')
+            .exec();
 
-        // Find all reviews for the book
-        const reviews = await Review.find({ book: bookId })
-            .populate('user', 'username')
-            .sort({ createdAt: -1 });
-
-        res.status(200).json(reviews);
+        console.log('Fetched reviews:', reviews); // Debug log
+        res.json(reviews);
     } catch (error) {
-        console.error('Error fetching reviews:', error);
-        res.status(500).json({ message: error.message });
+        console.error('Error in /book/:bookId route:', error);
+        res.status(500).json({ 
+            message: 'Error fetching reviews',
+            error: error.message 
+        });
     }
 });
 
-// GET reviews by userId
 router.get('/user/:userId', async (req, res) => {
     try {
         const userId = sanitize(req.params.userId);
@@ -60,7 +53,6 @@ router.get('/user/:userId', async (req, res) => {
     }
 });
 
-// GET review by ID
 router.get('/:id', async (req, res) => {
     try {
         const review = await Review.findById(sanitize(req.params.id))
@@ -75,7 +67,6 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// POST new review
 router.post('/', async (req, res) => {
     try {
         const { user, book, rating, reviewText } = req.body;
@@ -104,7 +95,6 @@ router.post('/', async (req, res) => {
     }
 });
 
-// PUT update review
 router.put('/:id', async (req, res) => {
     try {
         const { rating, reviewText } = req.body;
@@ -130,7 +120,6 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-// DELETE review
 router.delete('/:id', async (req, res) => {
     try {
         const review = await Review.findById(sanitize(req.params.id));
