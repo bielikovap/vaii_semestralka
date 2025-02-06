@@ -150,7 +150,7 @@ const ViewAllAuthors = () => {
           <Link to={`/authors/${author._id}`} style={{ textDecoration: 'none' }}>
             <img 
               style={authorImageStyle} 
-              src={author.profilePicture || defaultAuthorImage} 
+              src={author.profileImage} 
               alt={author.name} 
             /> 
           </Link>

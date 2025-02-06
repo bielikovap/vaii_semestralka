@@ -4,7 +4,6 @@ import axios from 'axios';
 import sanitize from 'mongo-sanitize';
 import Header from '../../components/Header';
 
-
 const EditAuthor = () => {
   const { id } = useParams();
   const [author, setAuthor] = useState({
@@ -12,14 +11,14 @@ const EditAuthor = () => {
     bio: '',
     profilePicture: '',
   });
+  const [imageFile, setImageFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
   const [token, setToken] = useState(localStorage.getItem('token')); 
   const [userId, setUserId] = useState('');
-
-
 
   useEffect(() => {
     const checkAdmin = () => { 
@@ -75,6 +74,16 @@ const EditAuthor = () => {
     }));
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      // Create preview URL
+      const preview = URL.createObjectURL(file);
+      setPreviewUrl(preview);
+    }
+  };
+
   const validateFields = () => {
     if (!author.name.trim()) {
       return 'Name is required.';
@@ -96,25 +105,36 @@ const EditAuthor = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const validationError = validateFields();
-    if (validationError) {
-      setError(validationError);
+    if (!author.name.trim() || !author.bio.trim()) {
+      setError('Name and bio are required.');
       setShowModal(true);
       return;
     }
 
     try {
-      const sanitizedAuthor = {
-        name: sanitize(author.name),
-        bio: sanitize(author.bio),
-        profilePicture: sanitize(author.profilePicture),
-      };
-      await axios.put(`http://localhost:5554/authors/${id}`, sanitizedAuthor);
-      navigate(`/authors/${id}`); 
+      // First update the basic author information
+      const response = await axios.patch(`http://localhost:5554/authors/${id}`, {
+        name: author.name,
+        bio: author.bio
+      });
+
+      // If there's a new image, update it separately
+      if (imageFile) {
+        const formData = new FormData();
+        formData.append('image', imageFile);
+
+        await axios.patch(`http://localhost:5554/authors/${id}/image`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+      }
+
+      navigate(`/authors/${id}`);
     } catch (err) {
-      setError('Failed to update author details. Please try again.');
+      console.error('Error details:', err.response?.data || err.message);
+      setError(err.response?.data?.message || 'Failed to update author details. Please try again.');
       setShowModal(true);
-      console.error('Error updating author:', err.message);
     }
   };
 
@@ -152,14 +172,22 @@ const EditAuthor = () => {
           />
         </div>
         <div style={formGroupStyle}>
-          <label style={labelStyle}>Profile Picture URL</label>
+          <label style={labelStyle}>Profile Picture</label>
           <input
-            type="text"
-            name="profilePicture"
-            value={author.profilePicture}
-            onChange={handleChange}
-            style={inputStyle}
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            style={fileInputStyle}
           />
+          {(previewUrl || author.profileImage) && (
+            <div style={imagePreviewStyle}>
+              <img
+                src={previewUrl || author.profilePicture}
+                alt="Profile preview"
+                style={previewImageStyle}
+              />
+            </div>
+          )}
         </div>
         <button type="submit" style={submitButtonStyle}>
           Update Author
@@ -246,6 +274,30 @@ const textareaStyle = {
   minHeight: '120px',
   width: '100%',
   boxSizing: 'border-box',
+};
+
+const fileInputStyle = {
+  padding: '12px',
+  borderRadius: '8px',
+  border: '1px solid #ccc',
+  fontSize: '16px',
+  width: '100%',
+  boxSizing: 'border-box'
+};
+
+const imagePreviewStyle = {
+  marginTop: '10px',
+  width: '200px',
+  height: '200px',
+  border: '1px solid #ccc',
+  borderRadius: '8px',
+  overflow: 'hidden'
+};
+
+const previewImageStyle = {
+  width: '100%',
+  height: '100%',
+  objectFit: 'cover'
 };
 
 const submitButtonStyle = {

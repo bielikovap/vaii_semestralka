@@ -1,9 +1,12 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import { User } from '../models/userModel.js';
+import { Review } from '../models/reviewModel.js';
 import { v2 as cloudinary } from 'cloudinary';
 import multer from 'multer';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
+import sanitize from 'mongo-sanitize';
+import { body, param, validationResult } from 'express-validator';
 
 const router = express.Router();
 
@@ -23,23 +26,32 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({ storage: storage });
 
-//pridanie pouzivatela 
-router.post('/', async (request, response) => {
-  try {
-    const { username, email, password, firstName, lastName, role } = request.body;
+// Validation middleware
+const validateUser = [
+    body('username').trim().isLength({ min: 3 }).escape(),
+    body('email').isEmail().normalizeEmail(),
+    body('password').isLength({ min: 6 }),
+    body('firstName').trim().isLength({ min: 2 }).escape(),
+    body('lastName').trim().isLength({ min: 2 }).escape(),
+    body('role').isIn(['user', 'admin'])
+];
 
-    if (!username || !email || !password || !firstName || !lastName || !role) {
-      return response.status(400).send({
-        message: 'Send all required fields: username, email, password, firstName, lastName, role',
-      });
+const validate = (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
     }
+    next();
+};
 
-    const user = await User.create({ username, email, password, firstName, lastName, role });
-
-    return response.status(201).send(user);
+//pridanie pouzivatela 
+router.post('/', validateUser, validate, async (req, res) => {
+  try {
+    const cleanData = sanitize(req.body);
+    const user = await User.create(cleanData);
+    return res.status(201).json(user);
   } catch (error) {
-    console.log(error.message);
-    response.status(500).send({ message: error.message });
+    res.status(500).json({ message: error.message });
   }
 });
   
@@ -73,94 +85,65 @@ router.post('/', async (request, response) => {
   
   
   //jeden pouzivatel podla id
-  router.get('/:id', async (request, response) => {
+  router.get('/:id', [param('id').isMongoId()], validate, async (req, res) => {
     try {
-      const { id } = request.params;
-  
-      const user = await User.findById(id);
-  
-      if (!user) {
-        return response.status(404).json({ message: 'User not found' });
-      }
-  
-      return response.status(200).json(user);
+      const user = await User.findById(sanitize(req.params.id));
+      if (!user) return res.status(404).json({ message: 'User not found' });
+      res.status(200).json(user);
     } catch (error) {
-      console.log(error.message + "lalal");
-      response.status(500).send({ message: error.message });
+      res.status(500).json({ message: error.message });
     }
   });
 
   //uprava pouzivatela podla id (ten isty zdroj co v userModel)
-  router.put('/:id', async (request, response) => {
+  router.put('/:id', [
+    param('id').isMongoId(),
+    ...validateUser
+], validate, async (req, res) => {
   try {
-    const { id } = request.params;
-    const { username, email, password, firstName, lastName, role } = request.body;
-
-    if (!username || !email || !password || !firstName || !lastName) {
-      return response.status(400).send({
-        message: 'Send all required fields: username, email, password, firstName, lastName',
-      });
-    }
-
-    const user = await User.findById(id);
-    if (!user) {
-      return response.status(404).json({ message: 'User not found' });
-    }
-
-    user.username = username;
-    user.email = email;
-    user.password = password; 
-    user.firstName = firstName;
-    user.lastName = lastName;
-    user.role = role;
-
-    await user.save();
-    return response.status(200).json(user);
-  } catch (error) {
-    console.log(error.message);
-    response.status(500).send({ message: error.message });
-  }
-});
-
-router.patch('/:id/profile-image', upload.single('image'), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: 'No file uploaded' });
-    }
-
+    const cleanData = sanitize(req.body);
     const user = await User.findByIdAndUpdate(
-      req.params.id,
-      { 
-        profileImage: req.file.path 
-      },
-      { new: true }
+        sanitize(req.params.id),
+        cleanData,
+        { new: true, runValidators: true }
     );
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    res.json(user);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.status(200).json(user);
   } catch (error) {
-    console.error('Profile update error:', error);
     res.status(500).json({ message: error.message });
   }
 });
 
-router.delete('/:id', async (req, res) => {
+router.patch('/:id/profile-image', [
+  param('id').isMongoId()
+], validate, upload.single('image'), async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+    if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+    
+    const user = await User.findByIdAndUpdate(
+        sanitize(req.params.id),
+        { profileImage: req.file.path },
+        { new: true }
+    );
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
-    await Review.deleteMany({ user: req.params.id }); 
-    await user.deleteOne(); 
+router.delete('/:id', [param('id').isMongoId()], validate, async (req, res) => {
+  try {
+    const cleanId = sanitize(req.params.id);
+    const user = await User.findById(cleanId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    await Review.deleteMany({ user: cleanId });
+    await user.deleteOne();
 
     res.status(200).json({ message: 'User and associated reviews deleted' });
   } catch (error) {
-    console.error(error.message);
-    res.status(500).json({ message: 'Error deleting user and reviews' });
+    res.status(500).json({ message: error.message });
   }
 });
 

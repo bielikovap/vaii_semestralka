@@ -1,82 +1,90 @@
 import express from 'express';
 import { Suggestion } from '../models/suggestionModel.js';   
 import sanitize from 'mongo-sanitize';
+import { body, param, validationResult } from 'express-validator';
 
 const router = express.Router();
-// Create a new suggestion
-router.post("/", async (req, res) => {
-  try {
-    const { suggestion, type, submittedBy } = req.body;
 
-    if (!suggestion || !type) {
-      return res.status(400).json({ error: "Suggestion and type are required." });
+const validateSuggestion = [
+    body('suggestion').trim().isLength({ min: 1, max: 1000 }).escape(),
+    body('type').isIn(['book', 'author', 'feature']),
+    body('submittedBy').optional().isMongoId()
+];
+
+const validate = (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
     }
+    next();
+};
 
-    const newSuggestion = new Suggestion({
-      suggestion,
-      type,
-      submittedBy: submittedBy || null
-    });
-
-    await newSuggestion.save();
-    res.status(201).json(newSuggestion);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+router.post("/", validateSuggestion, validate, async (req, res) => {
+    try {
+        const cleanData = sanitize(req.body);
+        const newSuggestion = new Suggestion(cleanData);
+        await newSuggestion.save();
+        res.status(201).json(newSuggestion);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
-// Get all suggestions (optional: filter by status or type)
 router.get("/", async (req, res) => {
-  try {
-    const { status, type } = req.query;
-    const filter = {};
+    try {
+        const { status, type } = sanitize(req.query);
+        const filter = {};
 
-    if (status) filter.status = status;
-    if (type) filter.type = type;
+        if (status) filter.status = status;
+        if (type) filter.type = type;
 
-    const suggestions = await Suggestion.find(filter).populate("submittedBy", "username"); // Populate username if available
-    res.json(suggestions);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+        const suggestions = await Suggestion.find(filter)
+            .populate("submittedBy", "username");
+        res.json(suggestions);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
-// Update suggestion status (approve/reject)
-router.patch("/:id/status", async (req, res) => {
-  try {
-    const { status } = req.body;
-    if (!["pending", "approved", "rejected"].includes(status)) {
-      return res.status(400).json({ error: "Invalid status." });
+router.patch("/:id/status", [
+    param('id').isMongoId(),
+    body('status').isIn(['pending', 'approved', 'rejected'])
+], validate, async (req, res) => {
+    try {
+        const cleanId = sanitize(req.params.id);
+        const cleanStatus = sanitize(req.body.status);
+
+        const updatedSuggestion = await Suggestion.findByIdAndUpdate(
+            cleanId,
+            { status: cleanStatus },
+            { new: true }
+        );
+
+        if (!updatedSuggestion) {
+            return res.status(404).json({ error: "Suggestion not found." });
+        }
+
+        res.json(updatedSuggestion);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
-
-    const updatedSuggestion = await Suggestion.findByIdAndUpdate(
-      req.params.id,
-      { status },
-      { new: true }
-    );
-
-    if (!updatedSuggestion) {
-      return res.status(404).json({ error: "Suggestion not found." });
-    }
-
-    res.json(updatedSuggestion);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
 });
 
-// Delete a suggestion
-router.delete("/:id", async (req, res) => {
-  try {
-    const deletedSuggestion = await Suggestion.findByIdAndDelete(req.params.id);
-    if (!deletedSuggestion) {
-      return res.status(404).json({ error: "Suggestion not found." });
-    }
+router.delete("/:id", [
+    param('id').isMongoId()
+], validate, async (req, res) => {
+    try {
+        const cleanId = sanitize(req.params.id);
+        const deletedSuggestion = await Suggestion.findByIdAndDelete(cleanId);
+        
+        if (!deletedSuggestion) {
+            return res.status(404).json({ error: "Suggestion not found." });
+        }
 
-    res.json({ message: "Suggestion deleted successfully." });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+        res.json({ message: "Suggestion deleted successfully." });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
 export default router;

@@ -69,7 +69,7 @@ const Home = () => {
       const response = await axios.post('http://localhost:5554/suggestions', {
         suggestion,
         type: suggestionType,
-        submittedBy: userId // This will be null if user not logged in
+        submittedBy: userId 
       });
       setSuggestionSuccess(true);
       setSuggestion('');

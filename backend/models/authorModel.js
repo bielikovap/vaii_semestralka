@@ -15,10 +15,16 @@ const authorSchema = mongoose.Schema(
       type: Date,
       required: false,
     },
-    profilePicture: {
+    profileImage: {
       type: String,
-      required: true,
-    },
+      default: 'https://static.vecteezy.com/system/resources/thumbnails/029/470/675/small_2x/ai-generated-ai-generative-purple-pink-color-sunset-evening-nature-outdoor-lake-with-mountains-landscape-background-graphic-art-photo.jpg',
+      validate: {
+        validator: function(v) {
+          return /^https?:\/\/.+\.(jpg|jpeg|png|gif)$/i.test(v);
+        },
+        message: props => `${props.value} is not a valid image URL!`
+      }
+    }
   },
   {
     timestamps: true,

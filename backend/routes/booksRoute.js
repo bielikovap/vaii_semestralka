@@ -1,36 +1,42 @@
 import express from 'express';
 import mongoose from 'mongoose';
-import mongoSanitize from 'mongo-sanitize';  
+import mongoSanitize from 'mongo-sanitize';
+import { body, param, validationResult } from 'express-validator';
 import { Book } from '../models/bookModel.js';
 
 const router = express.Router();
 
-// nova kniha
-router.post('/', async (request, response) => {
-  try {
-    const { title, author, publishYear, ISBN, description, longDescription, bookCover } = request.body;
+// Update the validateBook middleware with more specific validation
+const validateBook = [
+    body('title').trim().isLength({ min: 1 }).withMessage('Title is required'),
+    body('author').isMongoId().withMessage('Valid author ID is required'),
+    body('publishYear').isInt({ min: 1000, max: new Date().getFullYear() })
+        .withMessage('Invalid publish year'),
+    body('ISBN').matches(/^(?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)[\d-]+$/)
+        .withMessage('Invalid ISBN format'),
+    body('description').trim().isLength({ min: 1 })
+        .withMessage('Description is required'),
+    body('longDescription').trim().isLength({ min: 1 })
+        .withMessage('Long description is required'),
+    body('bookCover').isURL().withMessage('Valid book cover URL is required')
+];
 
-    if (!title || !author || !publishYear || !ISBN || !description || !longDescription || !bookCover) {
-      return response.status(400).send({
-        message: 'Send all required fields: title, author, publishYear, ISBN, description, longDescription, bookCover',
-      });
+const validate = (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
     }
-    const sanitizedAuthor = mongoSanitize(author);
-    const sanitizedBody = mongoSanitize({ title, author: sanitizedAuthor, publishYear, ISBN, description, longDescription, bookCover });
+    next();
+};
 
-    if (!mongoose.Types.ObjectId.isValid(sanitizedAuthor)) {
-      return response.status(400).send({
-        message: 'Invalid author ID',
-      });
+//nova kniha
+router.post('/', validateBook, validate, async (req, res) => {
+    try {
+        const book = await Book.create(mongoSanitize(req.body));
+        res.status(201).json(book);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
-
-    const book = await Book.create(sanitizedBody);
-
-    return response.status(201).send(book);
-  } catch (error) {
-    console.log(error.message);
-    response.status(500).send({ message: error.message });
-  }
 });
 
 //vsetky
@@ -49,85 +55,67 @@ router.get('/', async (request, response) => {
     response.status(500).send({ message: error.message });
   }
 });
-//jedna kniha
-router.get('/:id', async (request, response) => {
-  try {
-    const { id } = request.params;
 
-    const sanitizedId = mongoSanitize(id);
-
-    const book = await Book.findById(sanitizedId).populate('author', 'name bio');
-
-    if (!book) {
-      return response.status(404).json({ message: 'Book not found' });
+//jedna kniha podla id
+router.get('/:id', async (req, res) => {
+    try {
+        const book = await Book.findById(mongoSanitize(req.params.id))
+            .populate('author', 'name bio');
+        if (!book) return res.status(404).json({ message: 'Book not found' });
+        res.status(200).json(book);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
-
-    return response.status(200).json(book);
-  } catch (error) {
-    console.log(error.message);
-    response.status(500).send({ message: error.message });
-  }
 });
 
-// update knihy
-router.put('/:id', async (request, response) => {
-  try {
-    const { id } = request.params;
-    const { title, author, publishYear, ISBN, description, longDescription, bookCover } = request.body;
+// Update the PUT route to handle the request properly
+router.put('/:id', [
+    param('id').isMongoId().withMessage('Invalid book ID'),
+    ...validateBook
+], validate, async (req, res) => {
+    try {
+        const sanitizedId = mongoSanitize(req.params.id);
+        const sanitizedBody = mongoSanitize(req.body);
 
-    if (!title || !author || !publishYear || !ISBN || !description || !longDescription || !bookCover) {
-      return response.status(400).send({
-        message: 'Send all required fields: title, author, publishYear, ISBN, description, longDescription bookCover',
-      });
+        // Log the sanitized data for debugging
+        console.log('Sanitized ID:', sanitizedId);
+        console.log('Sanitized Body:', sanitizedBody);
+
+        // Check if the book exists first
+        const existingBook = await Book.findById(sanitizedId);
+        if (!existingBook) {
+            return res.status(404).json({ message: 'Book not found' });
+        }
+
+        // Update the book
+        const book = await Book.findByIdAndUpdate(
+            sanitizedId,
+            sanitizedBody,
+            { 
+                new: true,
+                runValidators: true
+            }
+        ).populate('author', 'name bio');
+
+        res.status(200).json(book);
+    } catch (error) {
+        console.error('Update error:', error);
+        res.status(500).json({ 
+            message: error.message,
+            details: error.errors 
+        });
     }
-
-    // Sanitize the ID and the request body
-    const sanitizedId = mongoSanitize(id);
-    const sanitizedAuthor = mongoSanitize(author);
-    const sanitizedBody = mongoSanitize({ title, author: sanitizedAuthor, publishYear, ISBN, description, longDescription, bookCover });
-
-    if (!mongoose.Types.ObjectId.isValid(sanitizedAuthor)) {
-      return response.status(400).send({
-        message: 'Invalid author ID',
-      });
-    }
-
-    const updatedBook = await Book.findByIdAndUpdate(
-      sanitizedId,
-      sanitizedBody,
-      { new: true }
-    ).populate('author', 'name bio');
-
-    if (!updatedBook) {
-      return response.status(404).json({ message: 'Book not found' });
-    }
-
-    return response.status(200).json(updatedBook);
-  } catch (error) {
-    console.log(error.message);
-    response.status(500).send({ message: error.message });
-  }
 });
 
-// Delete a book by id
-router.delete('/:id', async (request, response) => {
-  try {
-    const { id } = request.params;
-
-    // Sanitize the ID parameter
-    const sanitizedId = mongoSanitize(id);
-
-    const result = await Book.findByIdAndDelete(sanitizedId);
-
-    if (!result) {
-      return response.status(404).json({ message: 'Book not found' });
+//delete knihy podla id
+router.delete('/:id', async (req, res) => {
+    try {
+        const book = await Book.findByIdAndDelete(mongoSanitize(req.params.id));
+        if (!book) return res.status(404).json({ message: 'Book not found' });
+        res.status(200).json({ message: 'Book deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
-
-    return response.status(200).send({ message: 'Book deleted successfully' });
-  } catch (error) {
-    console.log(error.message);
-    response.status(500).send({ message: error.message });
-  }
 });
 
 export default router;

@@ -66,9 +66,9 @@ const ViewAuthor = () => {
     <div style={styles.detailsContainer}>
       <Header />
       <div style={styles.imageContainer}>
-        {author.profilePicture && (
+        {author.profileImage && (
           <img
-            src={author.profilePicture}
+            src={author.profileImage}
             alt={author.name}
             style={styles.profilePicture}
           />

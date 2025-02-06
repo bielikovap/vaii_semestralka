@@ -2,15 +2,33 @@ import express from 'express';
 import { Review } from '../models/reviewModel.js';
 import { Book } from '../models/bookModel.js';
 import sanitize from 'mongo-sanitize';
+import { body, validationResult } from 'express-validator';
 
 const router = express.Router();
 
+// Basic validation middleware
+const validateReview = [
+    body('user').isMongoId(),
+    body('book').isMongoId(),
+    body('rating').isInt({ min: 1, max: 5 }),
+    body('reviewText').trim().isLength({ min: 1, max: 1000 })
+];
+
+const validate = (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+    next();
+};
+
+// Routes with sanitization
 router.get('/', async (req, res) => {
     try {
         const reviews = await Review.find()
             .populate('user', 'username')
             .populate('book', 'title');
-        res.status(200).json(reviews);
+        res.json(reviews);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -18,19 +36,12 @@ router.get('/', async (req, res) => {
 
 router.get('/book/:bookId', async (req, res) => {
     try {
-        const reviews = await Review.find({ book: req.params.bookId })
-            .populate('user', 'username profileImage _id')
-            .populate('book', 'title')
-            .exec();
-
-        console.log('Fetched reviews:', reviews); // Debug log
+        const reviews = await Review.find({ book: sanitize(req.params.bookId) })
+            .populate('user', 'username profileImage')
+            .populate('book', 'title');
         res.json(reviews);
     } catch (error) {
-        console.error('Error in /book/:bookId route:', error);
-        res.status(500).json({ 
-            message: 'Error fetching reviews',
-            error: error.message 
-        });
+        res.status(500).json({ message: error.message });
     }
 });
 
@@ -67,54 +78,42 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-router.post('/', async (req, res) => {
+router.post('/', validateReview, validate, async (req, res) => {
     try {
-        const { user, book, rating, reviewText } = req.body;
-        
-        if (!user || !book || !rating) {
-            return res.status(400).json({ message: 'Missing required fields' });
-        }
-
+        const cleanData = sanitize(req.body);
         const review = new Review({
-            user,
-            book,
-            rating,
-            reviewText,
+            ...cleanData,
             createdAt: new Date(),
             updatedAt: new Date()
         });
-
+        
         const savedReview = await review.save();
-        await Book.findByIdAndUpdate(book, {
+        await Book.findByIdAndUpdate(cleanData.book, {
             $push: { reviews: savedReview._id }
         });
-
+        
         res.status(201).json(savedReview);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', validateReview, validate, async (req, res) => {
     try {
-        const { rating, reviewText } = req.body;
-        const reviewId = sanitize(req.params.id);
-
+        const cleanData = sanitize(req.body);
         const updatedReview = await Review.findByIdAndUpdate(
-            reviewId,
+            sanitize(req.params.id),
             {
-                rating,
-                reviewText,
+                ...cleanData,
                 updatedAt: new Date()
             },
             { new: true }
         );
-
+        
         if (!updatedReview) {
             return res.status(404).json({ message: 'Review not found' });
         }
-
-        res.status(200).json(updatedReview);
+        res.json(updatedReview);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -126,13 +125,13 @@ router.delete('/:id', async (req, res) => {
         if (!review) {
             return res.status(404).json({ message: 'Review not found' });
         }
-
+        
         await Book.findByIdAndUpdate(review.book, {
             $pull: { reviews: review._id }
         });
-
         await Review.findByIdAndDelete(review._id);
-        res.status(200).json({ message: 'Review deleted successfully' });
+        
+        res.json({ message: 'Review deleted successfully' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

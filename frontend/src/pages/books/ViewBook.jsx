@@ -2,27 +2,23 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Header from '../../components/Header';
-import sanitize from 'mongo-sanitize';
 
 const ViewBook = () => {
   const { id } = useParams();
   const [book, setBook] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [review, setReview] = useState({ rating: 1, reviewText: '' });
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviews, setReviews] = useState([]);
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const DEFAULT_PROFILE_IMAGE = 'https://static.vecteezy.com/system/resources/thumbnails/029/470/675/small_2x/ai-generated-ai-generative-purple-pink-color-sunset-evening-nature-outdoor-lake-with-mountains-landscape-background-graphic-art-photo.jpg';
   const [showReviews, setShowReviews] = useState(false);
   const [userId, setUserId] = useState('');
+  const DEFAULT_PROFILE_IMAGE = 'https://static.vecteezy.com/system/resources/thumbnails/029/470/675/small_2x/ai-generated-ai-generative-purple-pink-color-sunset-evening-nature-outdoor-lake-with-mountains-landscape-background-graphic-art-photo.jpg';
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      setIsLoggedIn(true);
       try {
         const decodedToken = JSON.parse(atob(token.split('.')[1]));
         setIsAdmin(decodedToken.role === 'admin');
@@ -32,7 +28,6 @@ const ViewBook = () => {
         setIsAdmin(false);
       }
     } else {
-      setIsLoggedIn(false);
       setIsAdmin(false);
     }
   }, []);
@@ -42,10 +37,8 @@ const ViewBook = () => {
       try {
         const response = await axios.get(`http://localhost:5554/books/${id}`);
         setBook(response.data);
-        setLoading(false);
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to fetch book data.');
-        setLoading(false);
       }
     };
 
@@ -133,14 +126,6 @@ const ViewBook = () => {
     }
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setReview((prevReview) => ({
-      ...prevReview,
-      [name]: value,
-    }));
-  };
-
   const handleAddReviewClick = () => {
     setShowReviewForm(true);
   };
@@ -150,149 +135,11 @@ const ViewBook = () => {
   };
 
   const styles = {
-    container: {
-      padding: '20px',
-      backgroundColor: '#f9f9f9',
-      borderRadius: '8px',
-      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-      marginBottom: '20px'
-    },
-    cover: {
-      width: '150px',
-      height: '200px',
-      objectFit: 'cover',
-      borderRadius: '4px',
-      marginBottom: '10px'
-    },
-    title: {
-      fontSize: '1.5em',
-      fontWeight: 'bold',
-      marginBottom: '5px'
-    },
-    author: {
-      fontSize: '1.2em',
-      color: '#555',
-      marginBottom: '10px'
-    },
-    description: {
-      fontSize: '1em',
-      marginBottom: '15px',
-      fontFamily : 'against'
-    },
-    adminButtons: {
-      display: 'flex',
-      gap: '10px',
-      marginBottom: '15px'
-    },
-    button: {
-      padding: '8px 16px',
-      border: 'none',
-      borderRadius: '4px',
-      cursor: 'pointer',
-      fontSize: '1em'
-    },
-    editButton: {
-      backgroundColor: '#4CAF50',
-      color: 'white'
-    },
-    deleteButton: {
-      backgroundColor: '#f44336',
-      color: 'white'
-    },
-    addReviewButton: {
-      backgroundColor: '#2196F3',
-      color: 'white'
-    },
-    modal: {
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    modalContent: {
-      backgroundColor: 'white',
-      padding: '20px',
-      borderRadius: '8px',
-      width: '500px',
-    },
-    inputGroup: {
-      marginBottom: '15px',
-    },
-    label: {
-      display: 'block',
-      marginBottom: '5px',
-      fontWeight: 'bold',
-    },
-    input: {
-      width: '100%',
-      padding: '8px',
-      borderRadius: '4px',
-      border: '1px solid #ddd',
-    },
-    textarea: {
-      width: '100%',
-      padding: '8px',
-      borderRadius: '4px',
-      border: '1px solid #ddd',
-      height: '100px',
-    },
-    modalButtons: {
-      display: 'flex',
-      justifyContent: 'flex-end',
-      gap: '10px',
-    },
-    error: {
-      color: 'red',
-      marginBottom: '10px',
-    },
-    reviewForm: {
-      marginBottom: '20px',
-      padding: '15px',
-      border: '1px solid #eee',
-      borderRadius: '8px',
-    },
-    reviewTextarea: {
-      width: '100%',
-      padding: '8px',
-      borderRadius: '4px',
-      border: '1px solid #ddd',
-      height: '80px',
-      marginBottom: '10px',
-    },
-    ratingSelect: {
-      padding: '8px',
-      borderRadius: '4px',
-      border: '1px solid #ddd',
-      marginBottom: '10px',
-    },
-    submitButton: {
-      backgroundColor: '#4CAF50',
-      color: 'white',
-      padding: '10px 15px',
-      border: 'none',
-      borderRadius: '4px',
-      cursor: 'pointer',
-    },
-    reviewsContainer: {
-      marginTop: '20px',
-    },
     reviewCard: {
       padding: '15px',
       border: '1px solid #eee',
       borderRadius: '8px',
       marginBottom: '15px',
-    },
-    reviewer: {
-      fontWeight: 'bold',
-      marginBottom: '5px',
-    },
-    reviewText: {
-      fontSize: '1em',
     },
     reviewHeader: {
       display: 'flex',
@@ -317,10 +164,7 @@ const ViewBook = () => {
       color: '#734f96',
       textDecoration: 'none',
       fontWeight: 'bold',
-      cursor: 'pointer',
-      ':hover': {
-        textDecoration: 'underline'
-      }
+      cursor: 'pointer'
     },
     rating: {
       color: '#f39c12',
@@ -328,7 +172,7 @@ const ViewBook = () => {
       marginBottom: '15px',
       backgroundColor: '#fff9e6',
       padding: '8px 12px',
-    },
+    }
   };
 
   const formStyle = {
@@ -343,19 +187,6 @@ const ViewBook = () => {
     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
   };
 
-  const buttonStyle = {
-    padding: '10px 20px',
-    backgroundColor: '#4CAF50',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '16px',
-    transition: 'background-color 0.3s ease',
-    ':hover': {
-      backgroundColor: '#45a049'
-    }
-  };
   const formGroupStyle = {
     display: 'flex',
     flexDirection: 'column',
@@ -394,22 +225,22 @@ const ViewBook = () => {
             alt={book?.title}
             style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
           />
-          { isAdmin && (
-          <div style={{ marginTop: '1rem' }}>
-            <button
-              onClick={handleDelete}
-              style={{
-                fontFamily: 'against',
-                color: 'red',
-                border: 'none',
-                background: 'none',
-                fontSize: '14px',
-                cursor: 'pointer',
-              }}
-            >
-              Delete Book
-            </button>
-          </div>
+          {isAdmin && (
+            <div style={{ marginTop: '1rem' }}>
+              <button
+                onClick={handleDelete}
+                style={{
+                  fontFamily: 'against',
+                  color: 'red',
+                  border: 'none',
+                  background: 'none',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                }}
+              >
+                Delete Book
+              </button>
+            </div>
           )}
         </div>
         <div className="book-info" style={{ flex: '2', paddingLeft: '20px', minWidth: '300px' }}>
@@ -513,7 +344,7 @@ const ViewBook = () => {
               style={textareaStyle}
             ></textarea>
           </div>
-          <button type="submit" style={buttonStyle}>
+          <button type="submit" style={inputStyle}>
             Submit Review
           </button>
         </form>
@@ -521,6 +352,5 @@ const ViewBook = () => {
       </div>
   );
 };
-
 
 export default ViewBook;
